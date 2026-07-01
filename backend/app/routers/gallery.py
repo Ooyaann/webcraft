@@ -58,6 +58,8 @@ async def list_gallery_items(
         .join(ProjectTask, ProjectSubmission.task_id == ProjectTask.id)
         .join(Pertemuan, ProjectTask.pertemuan_id == Pertemuan.id)
         .where(Pertemuan.room_id.in_(room_ids))
+        # Only surface work the teacher explicitly published to the gallery.
+        .where(ProjectSubmission.is_published_to_gallery.is_(True))
         .options(
             selectinload(ProjectSubmission.siswa),
             selectinload(ProjectSubmission.task).selectinload(ProjectTask.pertemuan).selectinload(Pertemuan.room),
