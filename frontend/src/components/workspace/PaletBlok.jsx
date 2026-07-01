@@ -11,7 +11,7 @@ const BLOCK_GROUPS = [
     blocks: [
       { type: 'body', name: '<body>', icon: 'ti-layout', desc: 'Wadah utama dokumen web.' },
       { type: 'div', name: '<div>', icon: 'ti-square', desc: 'Pembungkus generik elemen.' },
-      { type: 'header', name: '<header>', icon: 'ti-layout-topbar', desc: 'Wadah navigasi atas (header).' },
+      { type: 'header', name: '<header>', icon: 'ti-layout-navbar', desc: 'Wadah navigasi atas (header).' },
       { type: 'footer', name: '<footer>', icon: 'ti-layout-bottombar', desc: 'Wadah catatan kaki (footer).' },
       { type: 'main', name: '<main>', icon: 'ti-layout-distribute-vertical', desc: 'Wadah konten utama.' },
       { type: 'section', name: '<section>', icon: 'ti-layout-board-split', desc: 'Bagian terpisah dari halaman web.' },

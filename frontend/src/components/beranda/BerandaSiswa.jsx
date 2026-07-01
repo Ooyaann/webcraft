@@ -238,7 +238,7 @@ export default function BerandaSiswa({ user }) {
 
           <div>
             <h3 className="font-fredoka text-base font-bold text-[#0F172A] mb-4 flex items-center gap-2 border-b-2 border-dashed border-[#0F172A]/20 pb-3">
-              <i className="ti ti-bell-filled text-amber-500 text-lg animate-wiggle" style={{ animationDuration: '1.2s' }} />
+              <i className="ti ti-bell text-amber-500 text-lg animate-wiggle" style={{ animationDuration: '1.2s' }} />
               Notifikasi dari Guru
             </h3>
 

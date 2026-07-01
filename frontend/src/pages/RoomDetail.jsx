@@ -563,7 +563,7 @@ export default function RoomDetail() {
                         </div>
                       ) : isCompleted ? (
                         <span className="px-3 py-1.5 bg-white text-[#10B981] border-2 border-[#10B981] shadow-[2px_2px_0px_#0F172A] font-fredoka text-[10px] font-bold rounded-lg flex items-center gap-1 shrink-0 hover:bg-emerald-50">
-                          <i className="ti ti-player-play-filled text-[#10B981]" />
+                          <i className="ti ti-player-play text-[#10B981]" />
                           Lihat Rekap
                         </span>
                       ) : isUnlocked ? (

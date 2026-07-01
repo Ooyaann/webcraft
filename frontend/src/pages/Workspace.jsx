@@ -52,6 +52,7 @@ export default function Workspace() {
   const [showValidationResult, setShowValidationResult] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
 
   // Reflection/Post-coding states
   const [showReflectionModal, setShowReflectionModal] = useState(false);
@@ -281,11 +282,11 @@ export default function Workspace() {
   return (
     <div className="w-full h-screen bg-[#E0F2FE] flex flex-col relative overflow-hidden font-nunito">
       {/* Top Toolbar Navigation */}
-      <header className="w-full bg-[#0F172A] text-white px-6 py-4 flex justify-between items-center border-b-4 border-[#0F172A] shrink-0">
+      <header className="w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-6 py-3.5 flex justify-between items-center border-b-4 border-[#0F172A] shrink-0 shadow-md">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/ruang-belajar')}
-            className="p-1.5 border-2 border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer"
+            className="p-1.5 border-2 border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer flex items-center justify-center animate-fade-in"
           >
             <i className="ti ti-arrow-left text-base" />
           </button>
@@ -298,6 +299,17 @@ export default function Workspace() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowPreview(prev => !prev)}
+            className={`px-3 py-1.5 border-2 border-slate-700 font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px] ${
+              showPreview ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-800 text-slate-350 hover:bg-slate-700'
+            }`}
+          >
+            <i className={`ti ${showPreview ? 'ti-layout-sidebar-right-collapse' : 'ti-layout-sidebar-right-expand'} text-sm`} />
+            <span className="hidden sm:inline">{showPreview ? 'Sembunyikan Preview' : 'Tampilkan Preview'}</span>
+          </button>
+
           <div className="flex items-center gap-1.5">
             <button
               onClick={undo}
@@ -316,8 +328,8 @@ export default function Workspace() {
               <i className="ti ti-arrow-forward-up text-base" />
             </button>
           </div>
-          <span className="px-3.5 py-1.5 bg-[#FACC15] text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-xs font-bold rounded-xl shadow-[2px_2px_0px_#0F172A] flex items-center gap-1 shrink-0">
-            <i className="ti ti-rocket" />
+          <span className="px-3.5 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-xs font-black rounded-xl shadow-[2px_2px_0px_#0F172A] flex items-center gap-1 shrink-0">
+            <i className="ti ti-rocket text-sm animate-bounce-slow" />
             Fase Action
           </span>
         </div>
@@ -328,29 +340,32 @@ export default function Workspace() {
         
         {/* Mission Instructions Panel */}
         {activeLevelConfig?.misi && (
-          <div className="bg-indigo-50 border-b-4 border-[#0F172A] px-4 py-3 flex items-start gap-2 shrink-0">
-            <i className="ti ti-target text-indigo-600 text-base mt-0.5 shrink-0" />
+          <div className="bg-gradient-to-r from-indigo-50 via-indigo-50/50 to-blue-50/30 border-b-4 border-[#0F172A] px-4 py-3 flex items-center gap-3 shrink-0">
+            <div className="bg-indigo-100 border-2 border-indigo-500 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-[1px_1px_0px_rgba(99,102,241,0.3)]">
+              <i className="ti ti-target text-indigo-600 text-base animate-pulse" />
+            </div>
             <div className="text-left">
-              <span className="font-fredoka text-[10px] font-bold text-indigo-700 uppercase tracking-wider">Misi yang harus dikerjakan:</span>
-              <p className="font-nunito text-xs text-indigo-900 font-bold leading-relaxed mt-0.5">{activeLevelConfig.misi}</p>
+              <span className="font-fredoka text-[9px] font-black text-indigo-650 uppercase tracking-widest block leading-none">Misi yang harus dikerjakan</span>
+              <p className="font-nunito text-xs text-slate-800 font-bold leading-relaxed mt-0.5">{activeLevelConfig.misi}</p>
             </div>
           </div>
         )}
 
         <div className="flex-1 w-full flex items-stretch overflow-hidden">
           {/* Left Panel (Palette) */}
-          <div className="w-[280px] border-r-4 border-[#0F172A] h-full overflow-y-auto bg-slate-50 shrink-0">
+          <div className="w-[280px] border-r-4 border-[#0F172A] h-full overflow-hidden bg-slate-50 shrink-0">
             <PaletBlok />
           </div>
 
           {/* Middle Panel (Editor: Kanvas & Code) */}
           <div className="flex-1 h-full flex flex-col overflow-hidden bg-white border-r-4 border-[#0F172A]">
-            <div className="bg-slate-100 border-b-4 border-[#0F172A] p-2 flex justify-start gap-2 shrink-0">
+            <div className="bg-slate-50 border-b-4 border-[#0F172A] p-2.5 flex justify-start gap-2.5 shrink-0">
               <button
+                type="button"
                 onClick={() => setActiveTab('kanvas')}
-                className={`px-4 py-2 border-2 border-[#0F172A] font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${activeTab === 'kanvas'
-                    ? 'bg-blue-600 text-white shadow-none translate-y-[1px]'
-                    : 'bg-white text-slate-700 hover:bg-slate-50'
+                className={`px-4.5 py-2 border-2 border-[#0F172A] font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${activeTab === 'kanvas'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-none translate-y-[1px]'
+                    : 'bg-white text-slate-655 hover:bg-slate-100/75'
                   }`}
               >
                 <i className="ti ti-layout-grid text-sm" />
@@ -358,10 +373,11 @@ export default function Workspace() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveTab('code')}
-                className={`px-4 py-2 border-2 border-[#0F172A] font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${activeTab === 'code'
-                    ? 'bg-slate-800 text-white shadow-none translate-y-[1px]'
-                    : 'bg-white text-slate-700 hover:bg-slate-50'
+                className={`px-4.5 py-2 border-2 border-[#0F172A] font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${activeTab === 'code'
+                    ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-none translate-y-[1px]'
+                    : 'bg-white text-slate-655 hover:bg-slate-100/75'
                   }`}
               >
                 <i className="ti ti-code text-sm" />
@@ -379,11 +395,13 @@ export default function Workspace() {
             </div>
           </div>
 
-          {/* Right Panel (Live Preview) */}
-          <div className="w-[30%] min-w-[320px] max-w-[450px] h-full flex flex-col bg-white shrink-0">
-            <div className="bg-emerald-100 border-b-4 border-[#0F172A] p-2 flex items-center justify-center gap-2 shrink-0 h-[52px]">
-              <i className="ti ti-eye text-emerald-700 text-lg" />
-              <span className="font-fredoka text-sm font-bold text-emerald-800">Hasil Live Preview</span>
+          {/* Right Panel (Live Preview Drawer) */}
+          <div className={`h-full flex flex-col bg-white shrink-0 transition-all duration-300 ${
+            showPreview ? 'w-[30%] min-w-[320px] max-w-[450px] opacity-100 visible' : 'w-0 min-w-0 opacity-0 invisible overflow-hidden'
+          }`}>
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-b-4 border-[#0F172A] p-2 flex items-center justify-center gap-2 shrink-0 h-[52px] shadow-sm">
+              <i className="ti ti-eye text-white text-base animate-pulse" />
+              <span className="font-fredoka text-sm font-bold text-white tracking-wide">Hasil Live Preview</span>
             </div>
             <div className="flex-1 relative bg-white p-4 overflow-y-auto">
               <PreviewPanel />
@@ -394,19 +412,22 @@ export default function Workspace() {
         {/* Global Action Footer Bar */}
         <div className="bg-white border-t-4 border-[#0F172A] p-4 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
           <div className="flex items-center gap-3 text-left w-full sm:w-auto">
-            <div className="bg-pink-50 border-2 border-[#0F172A] px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A]">
-              <i className="ti ti-history text-pink-600 text-sm" />
-              <span className="font-nunito text-[10px] font-bold text-pink-700">Percobaan: {attemptHistory.length}x</span>
+            <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white border-2 border-[#0F172A] px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A]">
+              <i className="ti ti-history text-white text-xs animate-spin-slow" />
+              <span className="font-fredoka text-[10px] font-bold">Percobaan: {attemptHistory.length}x</span>
             </div>
 
             {showValidationResult && (
-              <div className={`px-3 py-1.5 rounded-xl border-2 border-[#0F172A] font-nunito text-[10px] font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] ${isSuccess ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-                }`}>
-                <i className={`ti ${isSuccess ? 'ti-circle-check' : 'ti-alert-triangle'} text-sm`} />
+              <div className={`px-3.5 py-1.5 rounded-xl border-2 border-[#0F172A] font-fredoka text-[10px] font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] ${
+                isSuccess 
+                  ? 'bg-gradient-to-r from-emerald-450 to-teal-500 text-white bg-emerald-500' 
+                  : 'bg-gradient-to-r from-red-50 to-rose-100/50 text-red-700'
+              }`}>
+                <i className={`ti ${isSuccess ? 'ti-circle-check text-white text-xs animate-bounce' : 'ti-alert-triangle text-red-500 text-xs animate-pulse'}`} />
                 <span>
                   {isSuccess
-                    ? 'Luar biasa! Semua aturan struktur kriteria misi telah terpenuhi!'
-                    : `${validationErrors.length} kesalahan ditemukan. Coba evaluasi lagi!`}
+                    ? 'Luar biasa! Struktur kriteria misi telah terpenuhi!'
+                    : `${validationErrors.length} kesalahan ditemukan. Evaluasi kembali!`}
                 </span>
               </div>
             )}
@@ -414,19 +435,21 @@ export default function Workspace() {
 
           <div className="flex gap-3 w-full sm:w-auto shrink-0">
             <button
+              type="button"
               onClick={handleValidate}
               disabled={isValidating}
-              className={`flex-1 sm:flex-initial px-5 py-2.5 bg-white border-2 border-[#0F172A] text-slate-700 hover:bg-slate-50 font-nunito font-bold rounded-xl shadow-[3px_3px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] cursor-pointer transition-all flex items-center justify-center gap-1.5 text-xs ${isValidating ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
+              className={`flex-1 sm:flex-initial px-5 py-2.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border-2 border-[#0F172A] font-fredoka font-bold rounded-xl shadow-[3px_3px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] cursor-pointer transition-all flex items-center justify-center gap-1.5 text-xs ${
+                isValidating ? 'opacity-70 cursor-not-allowed shadow-none' : ''
+              }`}
             >
               {isValidating ? (
                 <>
-                  <i className="ti ti-loader animate-spin text-base" />
+                  <i className="ti ti-loader animate-spin text-sm" />
                   AI Sedang Memeriksa...
                 </>
               ) : (
                 <>
-                  <i className="ti ti-sparkles text-indigo-600 text-base" />
+                  <i className="ti ti-sparkles text-yellow-300 text-sm animate-pulse" />
                   Cek Logika Kode (AI)
                 </>
               )}
@@ -469,7 +492,7 @@ export default function Workspace() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl bg-white border-4 border-[#0F172A] rounded-2xl shadow-[8px_8px_0px_#0F172A] flex flex-col max-h-[90vh]">
             <div className="bg-emerald-500 text-white px-6 py-4 flex items-center gap-2 rounded-t-xl border-b-4 border-[#0F172A]">
-              <i className="ti ti-rate-review text-lg font-bold" />
+              <i className="ti ti-message-star text-lg font-bold" />
               <h3 className="font-fredoka text-lg font-bold">Refleksi Mandiri (Post-Coding)</h3>
             </div>
 

@@ -294,7 +294,7 @@ export default function GaleriKarya() {
                   <div className="flex justify-between items-center border-t border-slate-100 pt-3">
                     {sub.teacher_score !== null ? (
                       <div className="flex items-center gap-1">
-                        <i className="ti ti-star-filled text-[#FACC15]" />
+                        <i className="ti ti-star text-[#FACC15]" />
                         <span className="font-fredoka font-bold text-slate-800 text-sm">Skor: {sub.teacher_score}/100</span>
                       </div>
                     ) : (
@@ -593,7 +593,7 @@ export default function GaleriKarya() {
                             onClick={() => handleAppreciate(karya.id)}
                             className="px-3.5 py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-xl text-pink-600 font-fredoka text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                           >
-                            <i className="ti ti-heart-filled text-sm" />
+                            <i className="ti ti-heart text-sm" />
                             Suka ({karya.appreciations})
                           </button>
                         ) : (
