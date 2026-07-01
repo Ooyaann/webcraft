@@ -4,13 +4,13 @@ from typing import List, Optional, Dict, Any
 
 # ==================== AUTH SCHEMAS ====================
 class UserBase(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
     role: str = "siswa"  # 'siswa' | 'guru' | 'admin'
-    nisn_nip: Optional[str] = None
+    nisn_nip: Optional[str] = Field(default=None, max_length=20)
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8, max_length=128)
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -35,7 +35,7 @@ class TokenData(BaseModel):
 
 # ==================== ROOM SCHEMAS ====================
 class RoomCreate(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=100)
 
 class RoomJoin(BaseModel):
     code: str = Field(..., min_length=6, max_length=6)
@@ -53,15 +53,15 @@ class RoomResponse(BaseModel):
         from_attributes = True
 
 class RoomUpdate(BaseModel):
-    name: Optional[str] = None
+    name: Optional[str] = Field(default=None, max_length=100)
     is_active: Optional[bool] = None
-    announcement: Optional[str] = None
+    announcement: Optional[str] = Field(default=None, max_length=2000)
 
 
 # ==================== PERTEMUAN SCHEMAS ====================
 class PertemuanCreate(BaseModel):
     urutan: int
-    judul: str
+    judul: str = Field(..., min_length=1, max_length=200)
     cbl_engage_json: Optional[Dict[str, Any]] = None
     guiding_questions_json: Optional[List[str]] = None
     reflection_questions_json: Optional[List[str]] = None
@@ -82,7 +82,7 @@ class PertemuanResponse(BaseModel):
         from_attributes = True
 
 class PertemuanUpdate(BaseModel):
-    judul: Optional[str] = None
+    judul: Optional[str] = Field(default=None, min_length=1, max_length=200)
     urutan: Optional[int] = None
     is_published: Optional[bool] = None
     cbl_engage_json: Optional[Dict[str, Any]] = None
@@ -161,10 +161,10 @@ class CTSessionSave(BaseModel):
     session_id: Optional[str] = None
     task_id: str = "easy-1"
     step: str
-    answer: str
+    answer: str = Field(..., max_length=5000)
     # AI-evaluated (or locally computed) score for this step, 0-100.
     # When omitted, the backend falls back to a neutral default.
-    score: Optional[int] = None
+    score: Optional[int] = Field(default=None, ge=0, le=100)
 
 class ValidateCodeRequest(BaseModel):
     current_html: str

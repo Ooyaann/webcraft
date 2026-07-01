@@ -11,27 +11,56 @@ export const escapeHTML = (text) => {
     .replace(/'/g, '&#039;');
 };
 
+// Escape a value for safe use inside a double-quoted HTML attribute.
+const escapeAttr = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+
+// Allow only safe image URL schemes; block javascript:, vbscript:, etc.
+// (XSS hardening for AST content rendered into the sandboxed preview.)
+const sanitizeUrl = (url) => {
+  const value = String(url ?? '').trim();
+  const scheme = value.match(/^([a-z][a-z0-9+.\-]*):/i);
+  if (!scheme) return value; // relative path / anchor — safe, no scheme
+  const name = scheme[1].toLowerCase();
+  if (name === 'http' || name === 'https') return value;
+  if (/^data:image\//i.test(value)) return value;
+  return ''; // unknown/dangerous scheme — drop it
+};
+
+// Neutralize any attempt to break out of a <style> raw-text element.
+const sanitizeStyleContent = (css) => String(css ?? '').replace(/<\/(style|script)/gi, '');
+
+// Tags a leaf node is allowed to emit. Anything else is rendered as escaped
+// text, never as a tag — so a tampered AST (e.g. type "script") can't inject.
+const KNOWN_LEAF_TAGS = ['h1', 'p', 'li', 'button'];
+
 // Serialize AST to raw HTML string (for sandboxed iframe preview)
 export const toHTML = (nodes) => {
   if (!nodes || nodes.length === 0) return '';
 
   return nodes.map(node => {
     if (node.type === 'style') {
-      return `<style>${node.content || ''}</style>`;
+      return `<style>${sanitizeStyleContent(node.content || '')}</style>`;
     }
     if (node.type === 'img') {
-      return `<img src="${node.content || ''}" alt="WebCraft Image" style="max-width:100%; border:3px solid #0F172A; box-shadow:3px 3px 0px #0F172A; border-radius:8px;" />`;
+      return `<img src="${escapeAttr(sanitizeUrl(node.content || ''))}" alt="WebCraft Image" style="max-width:100%; border:3px solid #0F172A; box-shadow:3px 3px 0px #0F172A; border-radius:8px;" />`;
     }
     if (CONTAINER_TAGS.includes(node.type)) {
       const inner = toHTML(node.children || []);
       return `<${node.type}>${inner}</${node.type}>`;
     }
-    // Other tags: h1, p, li, button
-    let classes = '';
-    if (node.type === 'button') {
-      classes = ' style="background-color:#FACC15; color:#0F172A; border:3px solid #0F172A; box-shadow:2px 2px 0px #0F172A; font-weight:bold; padding:4px 12px; border-radius:6px; cursor:pointer;"';
+    if (KNOWN_LEAF_TAGS.includes(node.type)) {
+      let classes = '';
+      if (node.type === 'button') {
+        classes = ' style="background-color:#FACC15; color:#0F172A; border:3px solid #0F172A; box-shadow:2px 2px 0px #0F172A; font-weight:bold; padding:4px 12px; border-radius:6px; cursor:pointer;"';
+      }
+      return `<${node.type}${classes}>${escapeHTML(node.content || '')}</${node.type}>`;
     }
-    return `<${node.type}${classes}>${escapeHTML(node.content || '')}</${node.type}>`;
+    // Unknown / untrusted node type: render text content escaped, never a tag.
+    return escapeHTML(node.content || '');
   }).join('');
 };
 
