@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useStore } from '../../store/useStore';
 
 const BLOCK_GROUPS = [
@@ -81,6 +82,15 @@ export default function PaletBlok() {
     'containers': true, // Open by default
     'text': true
   });
+  // Tooltip rendered via a portal so it is never clipped by the palette's
+  // overflow containers. Holds the hovered block's text + viewport position.
+  const [tooltip, setTooltip] = React.useState(null);
+
+  const showTooltip = (e, block) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setTooltip({ name: block.name, desc: block.desc, x: r.right + 10, y: r.top + r.height / 2 });
+  };
+  const hideTooltip = () => setTooltip(null);
 
   const toggleGroup = (id) => {
     setOpenGroups(prev => ({
@@ -99,34 +109,45 @@ export default function PaletBlok() {
     addBlock(type, selectedContainerId);
   };
 
+  const getGroupHeaderClass = (id) => {
+    const classes = {
+      containers: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white',
+      text: 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white',
+      lists: 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white',
+      forms: 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-900',
+      media: 'bg-gradient-to-r from-pink-500 to-rose-600 text-white'
+    };
+    return classes[id] || 'bg-slate-100 text-[#0F172A]';
+  };
+
   return (
-    <div className="bg-white p-4 flex flex-col gap-4 overflow-y-auto h-full text-left">
+    <div className="bg-white p-4 flex flex-col gap-4 h-full text-left overflow-hidden">
       <div>
         <h3 className="font-fredoka text-base font-bold text-[#0F172A] flex items-center gap-1.5 border-b-2 border-dashed border-slate-200 pb-2">
-          <i className="ti ti-square-plus text-blue-600 text-lg" />
+          <i className="ti ti-square-plus text-blue-600 text-lg animate-pulse" />
           Palet Blok HTML
         </h3>
         <p className="font-nunito text-[10px] text-slate-500 font-bold leading-normal mt-1">
-          Klik elemen di bawah untuk memasukkannya ke dalam wadah terpilih.
+          Klik atau drag elemen ke kanvas struktur untuk merakit halaman web.
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 flex-1 overflow-y-auto pb-8 pr-1 custom-scrollbar">
+      <div className="flex flex-col gap-3.5 flex-1 overflow-y-auto pb-8 pr-1 custom-scrollbar">
         {BLOCK_GROUPS.map((group) => (
-          <div key={group.id} className="border-2 border-[#0F172A] rounded-xl overflow-hidden shadow-[2px_2px_0px_#0F172A] bg-white">
+          <div key={group.id} className="border-4 border-[#0F172A] rounded-[20px] overflow-hidden shadow-[3px_3px_0px_#0F172A] bg-white shrink-0">
             <button
               onClick={() => toggleGroup(group.id)}
-              className="w-full bg-slate-100 hover:bg-slate-200 px-3 py-2.5 flex items-center justify-between border-b-2 border-transparent transition-colors"
+              className={`w-full ${getGroupHeaderClass(group.id)} px-4 py-3 flex items-center justify-between border-b-4 border-[#0F172A] transition-colors font-fredoka text-xs font-bold`}
             >
               <div className="flex items-center gap-2">
-                <i className={`ti ${group.icon} text-[#0F172A] text-sm`} />
-                <span className="font-fredoka text-xs font-bold text-[#0F172A]">{group.title}</span>
+                <i className={`ti ${group.icon} text-sm`} />
+                <span>{group.title}</span>
               </div>
-              <i className={`ti ${openGroups[group.id] ? 'ti-chevron-up' : 'ti-chevron-down'} text-slate-500 text-sm transition-transform duration-200`} />
+              <i className={`ti ${openGroups[group.id] ? 'ti-chevron-up' : 'ti-chevron-down'} text-sm transition-transform duration-200`} />
             </button>
             
             {openGroups[group.id] && (
-              <div className="p-2 flex flex-col gap-2 border-t-2 border-[#0F172A]">
+              <div className="p-3 flex flex-col gap-2.5 bg-[#FAFBFB] max-h-64 overflow-y-auto border-t-2 border-[#0F172A] custom-scrollbar">
                 {group.blocks.map(block => (
                   <button
                     key={block.type}
@@ -136,21 +157,18 @@ export default function PaletBlok() {
                       e.dataTransfer.effectAllowed = 'copy';
                       e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'new', blockType: block.type }));
                     }}
-                    className="group relative w-full text-left p-2 bg-white border-2 border-slate-200 hover:border-[#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] rounded-xl flex items-center gap-2.5 transition-all cursor-grab active:cursor-grabbing hover:shadow-[2px_2px_0px_#0F172A] active:shadow-none"
+                    onMouseEnter={(e) => showTooltip(e, block)}
+                    onMouseLeave={hideTooltip}
+                    className="group relative w-full text-left p-2.5 bg-white border-2 border-slate-200 hover:border-[#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] rounded-xl flex items-center gap-3 transition-all cursor-grab active:cursor-grabbing hover:shadow-[2px_2px_0px_#0F172A] active:shadow-none"
                   >
-                    <div className={`w-7 h-7 rounded-lg ${group.color} flex items-center justify-center border-2 border-transparent group-hover:border-[#0F172A] shrink-0 transition-colors`}>
+                    <div className={`w-8 h-8 rounded-lg ${group.color} flex items-center justify-center border-2 border-transparent group-hover:border-[#0F172A] shrink-0 transition-colors shadow-sm`}>
                       <i className={`ti ${block.icon} text-sm`} />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="font-mono text-xs font-bold text-slate-700 group-hover:text-[#0F172A] transition-colors">{block.name}</p>
-                      <p className="font-nunito text-[9px] text-slate-400 group-hover:text-slate-600 font-bold leading-none mt-0.5 transition-colors line-clamp-1">{block.desc}</p>
-                    </div>
-
-                    {/* Hover tooltip for description if truncated */}
-                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-[#0F172A] text-white p-2 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none shadow-lg text-xs font-nunito border-2 border-white/20">
-                      <div className="font-bold mb-1 font-mono text-[10px] text-blue-300">{block.name}</div>
-                      {block.desc}
-                      <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-[#0F172A] rotate-45 border-l-2 border-b-2 border-white/20" />
+                      <p className="font-nunito text-[9.5px] text-slate-400 group-hover:text-slate-600 font-bold leading-normal mt-0.5 transition-colors whitespace-normal break-words">
+                        {block.desc}
+                      </p>
                     </div>
                   </button>
                 ))}
@@ -159,6 +177,17 @@ export default function PaletBlok() {
           </div>
         ))}
       </div>
+
+      {tooltip && createPortal(
+        <div
+          style={{ position: 'fixed', left: tooltip.x, top: tooltip.y, transform: 'translateY(-50%)' }}
+          className="z-[9999] w-52 bg-[#0F172A] text-white p-2.5 rounded-lg shadow-xl text-xs font-nunito border-2 border-white/20 pointer-events-none"
+        >
+          <div className="font-bold mb-1 font-mono text-[11px] text-blue-300">{tooltip.name}</div>
+          <div className="leading-snug text-white/90">{tooltip.desc}</div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
