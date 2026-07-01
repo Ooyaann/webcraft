@@ -24,6 +24,84 @@ function RekapPreview({ ast }) {
   );
 }
 
+// Read-only tree view of the AST block structure (no drag/select/edit).
+function BlockTree({ nodes, depth = 0 }) {
+  if (!nodes || nodes.length === 0) {
+    return depth === 0
+      ? <p className="text-slate-400 font-nunito text-xs font-bold italic p-2">Tidak ada blok.</p>
+      : null;
+  }
+  return (
+    <div className={depth > 0 ? 'pl-4 border-l-2 border-dashed border-slate-200 flex flex-col gap-1.5' : 'flex flex-col gap-1.5'}>
+      {nodes.map((node, i) => (
+        <div key={node.id || i} className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2 bg-slate-50 border-2 border-slate-200 rounded-lg px-2.5 py-1.5">
+            <span className="font-mono text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded shrink-0">{`<${node.type}>`}</span>
+            {node.type === 'style'
+              ? <span className="font-nunito text-[10px] text-slate-400 font-bold italic">gaya CSS</span>
+              : node.content
+                ? <span className="font-nunito text-[11px] text-slate-600 font-semibold truncate">{node.content}</span>
+                : null}
+          </div>
+          {Array.isArray(node.children) && node.children.length > 0 && (
+            <BlockTree nodes={node.children} depth={depth + 1} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Read-only artifact viewer with Preview / Blocks / Code tabs.
+function RekapArtifact({ ast }) {
+  const [tab, setTab] = useState('preview'); // 'preview' | 'blocks' | 'code'
+  let parsed = [];
+  try {
+    parsed = typeof ast === 'string' ? JSON.parse(ast) : (ast || []);
+  } catch (e) {
+    parsed = [];
+  }
+  const code = toFormattedCode(parsed);
+
+  const tabs = [
+    ['preview', 'Pratinjau', 'ti-eye'],
+    ['blocks', 'Blok', 'ti-stack-2'],
+    ['code', 'Kode', 'ti-code'],
+  ];
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-2">
+        {tabs.map(([key, label, icon]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-3 py-1.5 border-2 border-[#0F172A] rounded-lg font-fredoka text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+              tab === key ? 'bg-[#0F172A] text-white shadow-[2px_2px_0px_#94A3B8]' : 'bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <i className={`ti ${icon}`} /> {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'preview' && <RekapPreview ast={parsed} />}
+
+      {tab === 'blocks' && (
+        <div className="w-full h-64 overflow-y-auto border-2 border-[#0F172A] rounded-xl bg-white p-3 shadow-[3px_3px_0px_#0F172A] custom-scrollbar">
+          <BlockTree nodes={parsed} />
+        </div>
+      )}
+
+      {tab === 'code' && (
+        <div className="w-full h-64 overflow-auto border-2 border-[#0F172A] rounded-xl bg-[#0F172A] shadow-[3px_3px_0px_#0F172A] custom-scrollbar">
+          <pre className="p-3 text-[11px] leading-relaxed font-mono text-emerald-200 whitespace-pre">{code || '<!-- Kode kosong -->'}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Rekap() {
   const { roomId, tugasId } = useParams(); // tugasId = pertemuan_id
   const navigate = useNavigate();
@@ -136,7 +214,7 @@ export default function Rekap() {
 
           <div>
             <p className="font-fredoka text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Hasil Karyamu</p>
-            <RekapPreview ast={learning.ast} />
+            <RekapArtifact ast={learning.ast} />
           </div>
 
           {learning.teacherComment && (
@@ -186,7 +264,7 @@ export default function Rekap() {
 
           <div>
             <p className="font-fredoka text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Hasil Proyekmu</p>
-            <RekapPreview ast={project.final_ast} />
+            <RekapArtifact ast={project.final_ast} />
           </div>
 
           {project.teacher_comment && (
