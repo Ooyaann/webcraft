@@ -56,13 +56,10 @@ async def submit_learning_task(
     accuracy = 100 if not final_errors else max(0, 100 - (len(final_errors) * 15))
     final_score = int((accuracy + efficiency) / 2)
 
-    # Use passed values or fallback
-    post_score = submission.ct_post_score or {
-        "decomposition": 85,
-        "pattern_recognition": 80,
-        "abstraction": 85,
-        "algorithm_design": 82
-    }
+    # Store the real CT post-assessment when the client provides it; otherwise
+    # leave it null instead of inventing scores, so the teacher's analytics
+    # never show fabricated CT results.
+    post_score = submission.ct_post_score or None
 
     # Check for existing submission
     existing_res = await db.execute(
