@@ -1,0 +1,229 @@
+import React, { useState } from 'react';
+import { useStore } from '../../store/useStore';
+
+export default function KanvasItem({ node }) {
+  const {
+    selectedContainerId,
+    setSelectedContainerId,
+    removeBlock,
+    updateContent,
+    moveOrAddBlock
+  } = useStore();
+
+  const [dropPreview, setDropPreview] = useState(null); // 'before' | 'after' | null
+  const [isDragOverChildren, setIsDragOverChildren] = useState(false);
+
+  const isContainer = ['body', 'div', 'ul'].includes(node.type);
+
+  // Sibling drag and drop handlers (prevent nesting loop and drag body-root)
+  const handleDragOverCard = (e) => {
+    if (node.id === 'body-root') return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const isUpperHalf = relativeY < rect.height / 2;
+
+    setDropPreview(isUpperHalf ? 'before' : 'after');
+  };
+
+  const handleDragLeaveCard = () => {
+    setDropPreview(null);
+  };
+
+  const handleDropCard = (e) => {
+    if (node.id === 'body-root') return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const dragDataStr = e.dataTransfer.getData('text/plain');
+    if (!dragDataStr) return;
+
+    try {
+      const source = JSON.parse(dragDataStr);
+      const relation = dropPreview || 'after';
+      moveOrAddBlock(source, node.id, relation);
+    } catch (err) {
+      console.error("Failed to parse drag data:", err);
+    } finally {
+      setDropPreview(null);
+    }
+  };
+
+  // Container drop handlers (appending to container)
+  const handleDragOverChildren = (e) => {
+    if (!isContainer) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverChildren(true);
+  };
+
+  const handleDragLeaveChildren = () => {
+    setIsDragOverChildren(false);
+  };
+
+  const handleDropChildren = (e) => {
+    if (!isContainer) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverChildren(false);
+
+    const dragDataStr = e.dataTransfer.getData('text/plain');
+    if (!dragDataStr) return;
+
+    try {
+      const source = JSON.parse(dragDataStr);
+      moveOrAddBlock(source, node.id, 'append');
+    } catch (err) {
+      console.error("Failed to parse drag data:", err);
+    }
+  };
+  const isSelected = selectedContainerId === node.id;
+
+  const handleContainerClick = (e) => {
+    e.stopPropagation();
+    if (isContainer) {
+      setSelectedContainerId(node.id);
+    }
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    removeBlock(node.id);
+  };
+
+  const handleContentChange = (e) => {
+    updateContent(node.id, e.target.value);
+  };
+
+  // Node Color Scheme matching categories
+  const getHeaderStyle = () => {
+    if (node.type === 'body') return 'bg-blue-600 text-white';
+    if (['div', 'ul'].includes(node.type)) return 'bg-sky-100 text-[#0F172A] border-b-2';
+    if (['h1', 'p', 'li'].includes(node.type)) return 'bg-emerald-600 text-white';
+    if (['button', 'img'].includes(node.type)) return 'bg-pink-600 text-white';
+    if (node.type === 'style') return 'bg-yellow-500 text-[#0F172A]';
+    return 'bg-gray-100 text-gray-700';
+  };
+
+  const getIconClass = () => {
+    switch (node.type) {
+      case 'body': return 'ti ti-layout';
+      case 'div': return 'ti ti-square';
+      case 'ul': return 'ti ti-list';
+      case 'h1': return 'ti ti-heading';
+      case 'p': return 'ti ti-align-left';
+      case 'li': return 'ti ti-list-details';
+      case 'button': return 'ti ti-pointer';
+      case 'img': return 'ti ti-photo';
+      case 'style': return 'ti ti-brush';
+      default: return 'ti ti-code';
+    }
+  };
+
+  return (
+    <div
+      onClick={handleContainerClick}
+      onDragOver={node.id !== 'body-root' ? handleDragOverCard : undefined}
+      onDragLeave={node.id !== 'body-root' ? handleDragLeaveCard : undefined}
+      onDrop={node.id !== 'body-root' ? handleDropCard : undefined}
+      className={`relative border-2 border-[#0F172A] rounded-xl overflow-hidden bg-white text-left transition-all ${isContainer ? 'my-3 shadow-[2px_2px_0px_#0F172A]' : 'my-2'
+        } ${isSelected && isContainer ? 'ring-4 ring-blue-500/50 -translate-y-[1px]' : ''
+        }`}
+    >
+      {/* Sibling insertion markers */}
+      {dropPreview === 'before' && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500 z-50 animate-pulse" />
+      )}
+      {dropPreview === 'after' && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 z-50 animate-pulse" />
+      )}
+      {/* Node Header Label */}
+      <div
+        draggable={node.id !== 'body-root'}
+        onDragStart={(e) => {
+          e.stopPropagation();
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'existing', id: node.id }));
+        }}
+        className={`px-3 py-1.5 flex justify-between items-center text-xs font-fredoka font-bold border-[#0F172A] ${getHeaderStyle()} ${node.id !== 'body-root' ? 'cursor-grab active:cursor-grabbing select-none' : ''
+          }`}
+      >
+        <div className="flex items-center gap-1.5">
+          <i className={`${getIconClass()} text-sm`} aria-hidden />
+          <span>&lt;{node.type}&gt;</span>
+          {isSelected && isContainer && (
+            <span className="text-[9px] bg-white text-blue-600 px-1.5 py-0.5 rounded border border-blue-600">
+              Wadah Aktif
+            </span>
+          )}
+        </div>
+
+        {node.id !== 'body-root' && (
+          <button
+            onClick={handleDelete}
+            className="text-[#0F172A] hover:text-red-500 font-bold p-0.5 rounded transition-colors cursor-pointer flex items-center"
+          >
+            <i className="ti ti-trash text-sm" />
+          </button>
+        )}
+      </div>
+
+      {/* Node Body Content */}
+      <div className="p-3">
+        {isContainer ? (
+          <div
+            onDragOver={handleDragOverChildren}
+            onDragLeave={handleDragLeaveChildren}
+            onDrop={handleDropChildren}
+            className={`flex flex-col gap-2 min-h-[50px] p-2 rounded-lg transition-all ${isDragOverChildren
+                ? 'border-solid border-blue-500 bg-blue-50/20 border-4'
+                : isSelected
+                  ? 'border-blue-500 bg-blue-50/10 border-dashed border-4'
+                  : 'bg-slate-50/50 border-2 border-dashed border-slate-300'
+              }`}
+          >
+            {node.children && node.children.length > 0 ? (
+              node.children.map(child => (
+                <KanvasItem key={child.id} node={child} />
+              ))
+            ) : (
+              <p className="text-[10px] text-slate-400 font-nunito font-bold text-center py-4">
+                Wadah kosong. Tambahkan blok di sini!
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            {node.type === 'style' ? (
+              <textarea
+                value={node.content}
+                onChange={handleContentChange}
+                rows={3}
+                placeholder="/* Tulis kode CSS di sini */&#10;body { background-color: #E0F2FE; }&#10;h1 { color: #EC4899; }"
+                className="w-full px-2.5 py-1.5 bg-white border-2 border-[#0F172A] rounded-lg font-mono text-xs focus:outline-none leading-normal font-bold"
+              />
+            ) : node.type === 'img' ? (
+              <input
+                type="text"
+                value={node.content}
+                onChange={handleContentChange}
+                placeholder="Masukkan tautan/URL gambar di sini..."
+                className="w-full border-2 border-[#0F172A] rounded-lg bg-white px-2.5 py-1.5 font-bold font-nunito text-xs focus:outline-none"
+              />
+            ) : (
+              <input
+                type="text"
+                value={node.content}
+                onChange={handleContentChange}
+                placeholder="Tulis konten teks di sini..."
+                className="w-full border-2 border-[#0F172A] rounded-lg bg-white px-2.5 py-1.5 font-bold font-nunito text-xs focus:outline-none"
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

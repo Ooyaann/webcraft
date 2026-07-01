@@ -1,0 +1,768 @@
+@import "tailwindcss";
+
+@theme {
+  --color-game-bg: #F0F7FF;
+  --color-game-text: #0F172A;
+  --color-game-blue: #3B82F6;
+  --color-game-yellow: #FACC15;
+  --color-game-green: #10B981;
+  --color-game-pink: #EC4899;
+  --color-game-indigo: #6366F1;
+
+  --font-fredoka: "Fredoka", sans-serif;
+  --font-nunito: "Nunito", sans-serif;
+
+  --shadow-hard-sm: 2px 2px 0px #0F172A;
+  --shadow-hard: 4px 4px 0px #0F172A;
+  --shadow-hard-lg: 6px 6px 0px #0F172A;
+}
+
+:root {
+  --bg-color: #F0F7FF;
+  --text-main: #0F172A;
+  --game-blue: #3B82F6;
+  --game-yellow: #FACC15;
+  --game-green: #10B981;
+  --game-pink: #EC4899;
+  --game-indigo: #6366F1;
+  --border-thick: 2px solid #0F172A;
+}
+
+body {
+  background-color: var(--bg-color);
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--color-game-text);
+  font-family: var(--font-nunito);
+  position: relative;
+}
+
+/* Floating animated background shapes — subtle accents */
+body::before {
+  content: "";
+  position: fixed;
+  top: 8%;
+  left: 4%;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, var(--game-yellow), #FDE68A);
+  border-radius: 50%;
+  border: var(--border-thick);
+  z-index: -1;
+  animation: float 8s ease-in-out infinite;
+  opacity: 0.12;
+  filter: blur(1px);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: 12%;
+  right: 4%;
+  width: 160px;
+  height: 160px;
+  background: linear-gradient(135deg, var(--game-pink), #F9A8D4);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  border: var(--border-thick);
+  z-index: -1;
+  animation: float 10s ease-in-out infinite reverse;
+  opacity: 0.1;
+  filter: blur(1px);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(8deg);
+  }
+
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 12px 4px rgba(99, 102, 241, 0.15);
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-fredoka);
+}
+
+/* ============================
+   Neo-Brutalism Global Utilities
+   ============================ */
+
+@utility neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.25rem;
+  font-family: var(--font-fredoka);
+  font-weight: 700;
+  font-size: 0.95rem;
+  background-color: var(--color-game-blue);
+  color: white;
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border-radius: 0.75rem;
+
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-hard-lg);
+  }
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px #0F172A;
+  }
+}
+
+@utility neo-btn-blue {
+  background-color: var(--color-game-blue);
+  color: white;
+}
+
+@utility neo-btn-green {
+  background-color: var(--color-game-green);
+  color: white;
+}
+
+@utility neo-btn-pink {
+  background-color: var(--color-game-pink);
+  color: white;
+}
+
+@utility neo-btn-yellow {
+  background-color: var(--color-game-yellow);
+  color: var(--color-game-text);
+}
+
+@utility neo-card {
+  background-color: #FFFFFF;
+  color: var(--color-game-text);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+@utility neo-input {
+  border: var(--border-thick);
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-family: var(--font-nunito);
+  font-weight: 700;
+  color: var(--color-game-text);
+  box-shadow: var(--shadow-hard-sm);
+  transition: all 0.15s ease;
+  outline: none;
+  background: white;
+
+  &:focus {
+    box-shadow: var(--shadow-hard);
+    transform: translate(-1px, -1px);
+    border-color: var(--color-game-blue);
+  }
+
+  &::placeholder {
+    color: #94A3B8;
+    font-weight: 600;
+  }
+}
+
+@utility neo-border {
+  border: var(--border-thick);
+}
+
+@utility neo-border-sm {
+  border: 1px solid #0F172A;
+}
+
+@utility neo-badge-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  background-color: #EEF2FF;
+  color: #4338CA;
+  border: 1px solid #C7D2FE;
+  border-radius: 0.375rem;
+  font-family: var(--font-fredoka);
+  font-weight: 700;
+  font-size: 0.625rem;
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+@utility neo-section {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+@utility neo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-fredoka);
+  font-weight: 700;
+  font-size: 0.625rem;
+  border-radius: 0.5rem;
+  border: 1px solid currentColor;
+}
+
+/* Google Material Icons setup */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Selection highlight */
+::selection {
+  background-color: #FACC15;
+  color: #0F172A;
+}
+
+/* ============================
+   Rich Animations System
+   ============================ */
+
+/* Staggered entrance for child elements */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  70% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes floatSlow {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+
+  33% {
+    transform: translateY(-12px) translateX(8px) rotate(5deg);
+  }
+
+  66% {
+    transform: translateY(-6px) translateX(-5px) rotate(-3deg);
+  }
+
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes wiggle {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-3deg);
+  }
+
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+/* Shimmer loading skeleton */
+@utility neo-shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+/* Staggered section entrance */
+@utility neo-stagger-1 {
+  animation: slideInUp 0.5s ease-out 0.05s both;
+}
+
+@utility neo-stagger-2 {
+  animation: slideInUp 0.5s ease-out 0.12s both;
+}
+
+@utility neo-stagger-3 {
+  animation: slideInUp 0.5s ease-out 0.20s both;
+}
+
+@utility neo-stagger-4 {
+  animation: slideInUp 0.5s ease-out 0.28s both;
+}
+
+@utility neo-stagger-5 {
+  animation: slideInUp 0.5s ease-out 0.36s both;
+}
+
+/* Bouncy interactive hover for cards */
+@utility neo-hover-bounce {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 8px 8px 0px #0F172A;
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 1px 1px 0px #0F172A;
+  }
+}
+
+/* Gradient animated background for hero sections */
+@utility neo-gradient-bg {
+  background: linear-gradient(-45deg, #3B82F6, #6366F1, #EC4899, #FACC15);
+  background-size: 300% 300%;
+  animation: gradientShift 8s ease infinite;
+}
+
+/* Wiggle animation for icons on hover */
+@utility neo-wiggle {
+  transition: transform 0.3s ease;
+
+  &:hover {
+    animation: wiggle 0.4s ease;
+  }
+}
+
+/* Floating particle effect — additional pseudo-element shapes */
+.floating-shapes {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.floating-shapes .shape {
+  position: absolute;
+  border: 2px solid #0F172A;
+  opacity: 0.06;
+  animation: floatSlow 12s ease-in-out infinite;
+}
+
+.floating-shapes .shape:nth-child(1) {
+  top: 15%;
+  left: 8%;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #3B82F6, #93C5FD);
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  animation-delay: 0s;
+  animation-duration: 10s;
+}
+
+.floating-shapes .shape:nth-child(2) {
+  top: 60%;
+  right: 10%;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #FACC15, #FDE68A);
+  border-radius: 50%;
+  animation-delay: -3s;
+  animation-duration: 14s;
+}
+
+.floating-shapes .shape:nth-child(3) {
+  bottom: 20%;
+  left: 15%;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #EC4899, #F9A8D4);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  animation-delay: -6s;
+  animation-duration: 11s;
+}
+
+.floating-shapes .shape:nth-child(4) {
+  top: 35%;
+  right: 25%;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #10B981, #6EE7B7);
+  border-radius: 0 50% 50% 50%;
+  transform: rotate(45deg);
+  animation-delay: -4s;
+  animation-duration: 13s;
+}
+
+.floating-shapes .shape:nth-child(5) {
+  bottom: 40%;
+  left: 50%;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #6366F1, #A5B4FC);
+  border-radius: 50% 50% 50% 0;
+  animation-delay: -8s;
+  animation-duration: 15s;
+}
+
+/* Mouse cursor sparkle trail — CSS only via custom cursor */
+@utility neo-cursor-sparkle {
+  cursor: none !important;
+}
+
+.neo-cursor-sparkle * {
+  cursor: none !important;
+}
+
+@keyframes particleFade {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) translate(var(--dx, 0px), var(--dy, 0px)) scale(0) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.mouse-particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  animation: particleFade 0.7s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+  border: 1.5px solid #0F172A;
+  box-shadow: 1px 1px 0px #0F172A;
+}
+
+/* Loading spinner neo-style */
+@keyframes neoSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@utility neo-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #3B82F6;
+  border-right: 3px solid #EC4899;
+  border-radius: 50%;
+  animation: neoSpin 0.8s linear infinite;
+}
+
+/* Page transition wrapper */
+@utility neo-page-enter {
+  animation: slideInUp 0.5s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+/* Pulse for notification badges */
+@keyframes notifPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@utility neo-notif-pulse {
+  animation: notifPulse 2s ease-in-out infinite;
+}
+
+/* Custom coding symbol floating animation */
+@keyframes floatSymbol {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: translateY(-30px) rotate(12deg) scale(1.08);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+}
+
+@utility animate-float-symbol {
+  animation: floatSymbol 15s infinite ease-in-out;
+}
+
+/* Custom Neo Cursor & Lagging Dot Ring */
+.neo-custom-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 99998;
+  will-change: transform;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.neo-custom-cursor-ring-inner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(59, 130, 246, 0.35);
+  background-image: radial-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px);
+  background-size: 4px 4px;
+  transform: translate(-50%, -50%);
+  will-change: transform, width, height, border-color, background-image;
+  transition: width 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    height 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    border-color 0.2s ease,
+    background-image 0.2s ease;
+}
+
+/* Hover over interactive elements */
+.neo-custom-cursor-ring.cursor-hover .neo-custom-cursor-ring-inner {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(236, 72, 199, 0.5);
+  border-style: solid;
+  background-image: radial-gradient(rgba(236, 72, 199, 0.2) 1px, transparent 1px);
+  background-size: 5px 5px;
+  animation: spinRingInner 12s linear infinite;
+}
+
+@keyframes spinRingInner {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Mouse click state */
+.neo-custom-cursor-ring.cursor-clicked .neo-custom-cursor-ring-inner {
+  width: 24px;
+  height: 24px;
+  border-color: rgba(16, 185, 129, 0.6);
+  background-image: radial-gradient(rgba(16, 185, 129, 0.3) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.neo-custom-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 99999;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.neo-custom-cursor-dot-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(0, 0);
+  will-change: transform;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Hover state for cursor dot */
+.neo-custom-cursor-dot.cursor-hover .neo-custom-cursor-dot-inner {
+  transform: scale(1.2) rotate(-5deg);
+}
+
+/* Click state for cursor dot */
+.neo-custom-cursor-dot.cursor-clicked .neo-custom-cursor-dot-inner {
+  transform: scale(0.8) rotate(5deg);
+}
+
+/* Page Loader Splash Animations */
+@keyframes bounceSlow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounceSlow 1.5s ease-in-out infinite;
+}
+
+@keyframes loadProgress {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-loading-bar {
+  animation: loadProgress 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Pastel Gradients for Cards and Sections */
+@utility bg-pastel-mint {
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+}
+
+@utility bg-pastel-lavender {
+  background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+}
+
+@utility bg-pastel-peach {
+  background: linear-gradient(135deg, #FFE4E6 0%, #FECDD3 100%);
+}
+
+@utility bg-pastel-blue {
+  background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+}
+
+@utility bg-pastel-yellow {
+  background: linear-gradient(135deg, #FEF08A 0%, #FDE047 100%);
+}

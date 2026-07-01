@@ -1,0 +1,46 @@
+# Version control ignore rules for WebCraft
+
+# Environment variables (contains sensitive Gemini API Keys, JWT secret)
+.env
+.env.local
+.env.*.local
+
+# Databases
+*.db
+*.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.poetry/
+.pytest_cache/
+.mypy_cache/
+
+# Node / JS
+node_modules/
+dist/
+.eslintcache
+.parcel-cache
+.yarn/
+.pnpm-store/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+File
+analisis_pengembangan_webcraft.md
+blueprint_webcraft_v3.md
+implementation_plan.md
+implementation_plan_webcraft_v2.md
+prompt_antigravity_webcraft.md
