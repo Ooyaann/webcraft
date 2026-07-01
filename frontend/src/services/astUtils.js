@@ -22,7 +22,7 @@ const escapeAttr = (value) => String(value ?? '')
 // (XSS hardening for AST content rendered into the sandboxed preview.)
 const sanitizeUrl = (url) => {
   const value = String(url ?? '').trim();
-  const scheme = value.match(/^([a-z][a-z0-9+.\-]*):/i);
+  const scheme = value.match(/^([a-z][a-z0-9+.-]*):/i);
   if (!scheme) return value; // relative path / anchor — safe, no scheme
   const name = scheme[1].toLowerCase();
   if (name === 'http' || name === 'https') return value;
