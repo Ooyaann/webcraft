@@ -103,4 +103,10 @@ async def get_journey_session(
     session = result.scalars().first()
     if not session:
         raise HTTPException(status_code=404, detail="Sesi CT Journey tidak ditemukan.")
+    # Ownership check (prevents IDOR): a siswa may only read their own session.
+    if current_user.role == "siswa" and session.siswa_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Anda tidak memiliki akses ke sesi CT Journey ini."
+        )
     return session

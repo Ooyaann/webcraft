@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any
 from sqlalchemy.future import select
@@ -13,6 +14,8 @@ from app.schemas import (
     SuggestScoreRequest, SuggestScoreResponse, ValidateCodeRequest, ValidateCodeResponse
 )
 from app.services import ai_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ai", tags=["ai-assistant"])
 
@@ -34,10 +37,11 @@ async def analyze_ct_journey_step(
             ct_score_delta=result.get("ct_score_delta", 80),
             next_hint=result.get("next_hint", "")
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to analyze CT journey step")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Terjadi kesalahan saat memproses evaluasi AI: {str(e)}"
+            detail="Terjadi kesalahan saat memproses evaluasi AI. Silakan coba lagi."
         )
 
 # Router POST: Socratic Tutor Hint in Workspace
@@ -56,10 +60,11 @@ async def get_socratic_tutor_hint(
             conversation_history=request.conversation_history
         )
         return TutorResponse(hint=hint)
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to get socratic tutor hint")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Terjadi kesalahan pada modul AI Tutor: {str(e)}"
+            detail="Terjadi kesalahan pada modul AI Tutor. Silakan coba lagi."
         )
 
 # Router POST: Get classroom-wide error heatmap & AI advice (Guru only)
@@ -165,10 +170,11 @@ async def analyze_ct_session(
             reflection=request.reflection
         )
         return CTSessionResponse(**result)
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to analyze CT session")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Terjadi kesalahan saat menganalisis sesi CT: {str(e)}"
+            detail="Terjadi kesalahan saat menganalisis sesi CT. Silakan coba lagi."
         )
 
 @router.post("/suggest-score", response_model=SuggestScoreResponse)
@@ -183,10 +189,11 @@ async def suggest_project_score(
             challenge_context=request.challenge_context
         )
         return SuggestScoreResponse(**result)
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to suggest project score")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Terjadi kesalahan saat menghitung saran penilaian proyek: {str(e)}"
+            detail="Terjadi kesalahan saat menghitung saran penilaian proyek. Silakan coba lagi."
         )
 
 @router.post("/validate-code", response_model=ValidateCodeResponse)
@@ -204,9 +211,10 @@ async def validate_code(
             is_valid=result.get("is_valid", False),
             feedback=result.get("feedback", "")
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to validate student code")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Terjadi kesalahan saat melakukan validasi kode AI: {str(e)}"
+            detail="Terjadi kesalahan saat melakukan validasi kode AI. Silakan coba lagi."
         )
 
