@@ -1,6 +1,6 @@
 import datetime
 def get_utc_now():
-    return datetime.datetime.now(datetime.timezone.utc)
+    return datetime.datetime.utcnow()
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Table, DateTime, Text, JSON
 from sqlalchemy.orm import relationship
 from app.database import Base
