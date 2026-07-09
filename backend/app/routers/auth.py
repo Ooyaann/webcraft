@@ -162,7 +162,7 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
 
     # Housekeeping: purge expired or revoked refresh tokens for this user to
     # prevent unbounded growth of the refresh_tokens table.
-    cutoff = datetime.datetime.now(datetime.timezone.utc)
+    cutoff = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
     stale = await db.execute(
         select(RefreshToken).where(
             RefreshToken.user_id == user.id,
@@ -202,7 +202,7 @@ async def refresh_access_token(payload: RefreshRequest, db: AsyncSession = Depen
     expires_at = stored.expires_at
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
-    if expires_at < datetime.datetime.now(datetime.timezone.utc):
+    if expires_at < datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None):
         raise invalid
 
     user_res = await db.execute(select(User).where(User.id == stored.user_id))
