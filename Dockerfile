@@ -12,5 +12,5 @@ COPY backend/ .
 # Hugging Face wajib pakai port 7860
 EXPOSE 7860
 
-# Jalankan alembic upgrade (jika perlu), jalankan seed.py, baru nyalakan uvicorn
-CMD alembic upgrade head && python seed.py && uvicorn main:app --host 0.0.0.0 --port 7860
+# Hapus isi skema (jika script seed kamu mendukung), jalankan upgrade, lalu masukkan data seed baru
+CMD alembic downgrade base && alembic upgrade head && python seed.py && uvicorn main:app --host 0.0.0.0 --port 7860
