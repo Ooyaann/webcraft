@@ -121,10 +121,11 @@ export const ctJourneySessions = pgTable("ct_journey_sessions", {
     .references(() => users.id, { onDelete: "cascade" }),
   task_id: text().notNull(), // id task terkait (tanpa FK, mengikuti model lama)
   challenge_context: jsonb().$type<Record<string, unknown>>().notNull(),
-  decomposition_answer_json: jsonb().$type<Record<string, unknown>>(),
-  abstraction_answer_json: jsonb().$type<Record<string, unknown>>(),
-  pattern_answer_json: jsonb().$type<Record<string, unknown>>(),
-  algorithm_answer_json: jsonb().$type<Record<string, unknown>>(),
+  // Jawaban per langkah: bisa string mentah atau array/objek (paritas model lama)
+  decomposition_answer_json: jsonb().$type<unknown>(),
+  abstraction_answer_json: jsonb().$type<unknown>(),
+  pattern_answer_json: jsonb().$type<unknown>(),
+  algorithm_answer_json: jsonb().$type<unknown>(),
   // {decomposition, pattern, abstraction, algorithm}
   ct_pre_score_json: jsonb().$type<Record<string, number>>(),
   is_locked: boolean().notNull().default(false),

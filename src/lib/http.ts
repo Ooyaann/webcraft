@@ -9,13 +9,18 @@ export class HttpError extends Error {
   constructor(
     public status: number,
     public detail: unknown,
+    public headers?: Record<string, string>,
   ) {
     super(typeof detail === "string" ? detail : JSON.stringify(detail));
   }
 }
 
-export function jsonError(status: number, detail: unknown) {
-  return NextResponse.json({ detail }, { status });
+export function jsonError(
+  status: number,
+  detail: unknown,
+  headers?: Record<string, string>,
+) {
+  return NextResponse.json({ detail }, { status, headers });
 }
 
 // Terjemahkan kode issue Zod ke kode tipe Pydantic yang dikenali frontend
@@ -62,7 +67,9 @@ export function handler<Ctx>(
     try {
       return await fn(req, ctx);
     } catch (err) {
-      if (err instanceof HttpError) return jsonError(err.status, err.detail);
+      if (err instanceof HttpError) {
+        return jsonError(err.status, err.detail, err.headers);
+      }
       if (err instanceof ZodError) {
         return jsonError(
           422,
