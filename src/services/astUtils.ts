@@ -1,3 +1,26 @@
+// Utilitas AST blok → HTML (dari astUtils.js, kini TypeScript).
+
+export type AstNode = {
+  id?: string;
+  type: string;
+  content?: string;
+  children?: AstNode[];
+};
+
+export type ValidationRule = {
+  type: string;
+  selector?: string;
+  parent?: string;
+  child?: string;
+  value?: string;
+  min?: number;
+  max?: number;
+  case_insensitive?: boolean;
+  error_message?: string;
+};
+
+export type ValidationError = { rule: ValidationRule; message?: string };
+
 export const CONTAINER_TAGS = [
   'body', 'div', 'ul', 'ol', 'nav', 'header', 'footer', 'section',
   'article', 'main', 'aside', 'form', 'table', 'tr', 'thead', 'tbody',
@@ -5,7 +28,7 @@ export const CONTAINER_TAGS = [
 ];
 
 // Helper to escape HTML characters
-export const escapeHTML = (text) => {
+export const escapeHTML = (text?: string | null): string => {
   if (!text) return '';
   return text
     .replace(/&/g, '&amp;')
@@ -16,7 +39,7 @@ export const escapeHTML = (text) => {
 };
 
 // Escape a value for safe use inside a double-quoted HTML attribute.
-const escapeAttr = (value) => String(value ?? '')
+const escapeAttr = (value: unknown): string => String(value ?? '')
   .replace(/&/g, '&amp;')
   .replace(/"/g, '&quot;')
   .replace(/</g, '&lt;')
@@ -24,7 +47,7 @@ const escapeAttr = (value) => String(value ?? '')
 
 // Allow only safe image URL schemes; block javascript:, vbscript:, etc.
 // (XSS hardening for AST content rendered into the sandboxed preview.)
-const sanitizeUrl = (url) => {
+const sanitizeUrl = (url: unknown): string => {
   const value = String(url ?? '').trim();
   const scheme = value.match(/^([a-z][a-z0-9+.-]*):/i);
   if (!scheme) return value; // relative path / anchor — safe, no scheme
@@ -35,7 +58,8 @@ const sanitizeUrl = (url) => {
 };
 
 // Neutralize any attempt to break out of a <style> raw-text element.
-const sanitizeStyleContent = (css) => String(css ?? '').replace(/<\/(style|script)/gi, '');
+const sanitizeStyleContent = (css: unknown): string =>
+  String(css ?? '').replace(/<\/(style|script)/gi, '');
 
 // Tags a leaf node is allowed to emit. Anything else is rendered as escaped
 // text, never as a tag — so a tampered AST (e.g. type "script") can't inject.
@@ -47,7 +71,7 @@ const KNOWN_LEAF_TAGS = [
 ];
 
 // Serialize AST to raw HTML string (for sandboxed iframe preview)
-export const toHTML = (nodes) => {
+export const toHTML = (nodes?: AstNode[] | null): string => {
   if (!nodes || nodes.length === 0) return '';
 
   return nodes.map(node => {
@@ -84,7 +108,7 @@ export const toHTML = (nodes) => {
 };
 
 // Serialize AST to indented HTML code (for syntax highlighted view)
-export const toFormattedCode = (nodes, depth = 0) => {
+export const toFormattedCode = (nodes?: AstNode[] | null, depth = 0): string => {
   if (!nodes || nodes.length === 0) return '';
 
   const indent = '  '.repeat(depth);
@@ -117,7 +141,7 @@ export const toFormattedCode = (nodes, depth = 0) => {
 };
 
 // Search helper to find a node by type in the AST
-export const findNodeByType = (nodes, type) => {
+export const findNodeByType = (nodes: AstNode[], type?: string): AstNode | null => {
   for (const node of nodes) {
     if (node.type === type) return node;
     if (node.children) {
@@ -129,7 +153,7 @@ export const findNodeByType = (nodes, type) => {
 };
 
 // Helper to count nodes of a specific type in AST
-export const countNodesByType = (nodes, type) => {
+export const countNodesByType = (nodes: AstNode[], type?: string): number => {
   let count = 0;
   for (const node of nodes) {
     if (node.type === type) count++;
@@ -141,8 +165,12 @@ export const countNodesByType = (nodes, type) => {
 };
 
 // Helper to check nesting (is childNode a descendant of parentNode?)
-export const isChildOf = (nodes, parentType, childType) => {
-  const findParent = (nodesList) => {
+export const isChildOf = (
+  nodes: AstNode[],
+  parentType?: string,
+  childType?: string,
+): boolean => {
+  const findParent = (nodesList: AstNode[]): AstNode | null => {
     for (const node of nodesList) {
       if (node.type === parentType) {
         return node;
@@ -158,7 +186,7 @@ export const isChildOf = (nodes, parentType, childType) => {
   const parentNode = findParent(nodes);
   if (!parentNode || !parentNode.children) return false;
 
-  const hasChild = (children) => {
+  const hasChild = (children: AstNode[]): boolean => {
     for (const child of children) {
       if (child.type === childType) return true;
       if (child.children && hasChild(child.children)) return true;
@@ -170,16 +198,19 @@ export const isChildOf = (nodes, parentType, childType) => {
 };
 
 // Helper to evaluate direct children count of a node
-export const getDirectChildrenCount = (nodes, parentType) => {
+export const getDirectChildrenCount = (nodes: AstNode[], parentType?: string): number => {
   const node = findNodeByType(nodes, parentType);
   return node && node.children ? node.children.length : 0;
 };
 
 // Validate AST based on JSON rules
-export const validateAST = (ast, rules) => {
+export const validateAST = (
+  ast: AstNode[],
+  rules?: ValidationRule[] | null,
+): ValidationError[] => {
   if (!rules || !Array.isArray(rules)) return [];
 
-  const errors = [];
+  const errors: ValidationError[] = [];
 
   rules.forEach(rule => {
     if (rule.type === 'exists') {
@@ -196,16 +227,17 @@ export const validateAST = (ast, rules) => {
     }
     else if (rule.type === 'content_match') {
       // Find the node
-      const selectorType = rule.selector.includes('>')
-        ? rule.selector.split('>').pop().trim()
-        : rule.selector.trim();
+      const selector = rule.selector ?? '';
+      const selectorType = selector.includes('>')
+        ? (selector.split('>').pop() ?? '').trim()
+        : selector.trim();
 
       const node = findNodeByType(ast, selectorType);
       if (!node) {
         errors.push({ rule, message: `Tag <${selectorType}> tidak ditemukan.` });
       } else {
         const content = (node.content || '').trim();
-        const targetValue = rule.value.trim();
+        const targetValue = (rule.value ?? '').trim();
         let match = false;
 
         if (rule.case_insensitive) {
@@ -221,8 +253,9 @@ export const validateAST = (ast, rules) => {
     }
     else if (rule.type === 'count') {
       let count = 0;
-      if (rule.selector.includes('>')) {
-        const parts = rule.selector.split('>').map(s => s.trim());
+      const selector = rule.selector ?? '';
+      if (selector.includes('>')) {
+        const parts = selector.split('>').map(s => s.trim());
         const parentType = parts[0];
         const childType = parts[1];
         if (childType === '*') {
@@ -234,7 +267,7 @@ export const validateAST = (ast, rules) => {
           }
         }
       } else {
-        count = countNodesByType(ast, rule.selector);
+        count = countNodesByType(ast, selector);
       }
 
       if (rule.min && count < rule.min) {

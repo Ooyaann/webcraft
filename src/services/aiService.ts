@@ -1,7 +1,46 @@
 import api from './api';
+import type { AstNode, ValidationRule } from './astUtils';
+
+// Klien AI frontend (dari aiService.js, kini TypeScript).
+// Setiap fungsi memanggil endpoint /ai/* dan punya fallback simulasi lokal
+// bila endpoint gagal — perilaku identik dengan versi JS.
+
+export type CtStepResult = {
+  feedback: string;
+  ct_score_delta: number;
+  next_hint: string;
+};
+
+export type CtSessionResult = {
+  decomposition: number;
+  pattern_recognition: number;
+  abstraction: number;
+  algorithm_design: number;
+  narrative: string;
+  recommendations: string[];
+};
+
+export type CodeValidationResult = { is_valid: boolean; feedback: string };
+
+type ChatMessage = { role?: string; content?: string };
+
+// Jawaban CT Journey per langkah: array pilihan ATAU string mentah.
+type StepAnswers = {
+  decomposition: string | unknown[];
+  pattern: string | unknown[];
+  abstraction?: unknown;
+  algorithm: string | unknown[];
+  [key: string]: unknown;
+};
 
 // Socratic simulation helper for workspace hints
-const getMockSocraticHint = (currentAST, targetRules, attemptHistory, studentMessage, conversationHistory) => {
+const getMockSocraticHint = (
+  currentAST: AstNode[],
+  targetRules: ValidationRule[] | null | undefined,
+  attemptHistory: unknown[],
+  studentMessage: string | null | undefined,
+  _conversationHistory?: ChatMessage[] | null,
+): string => {
   // Simple check on AST nodes
   const hasBody = currentAST.some(n => n.type === 'body');
   const bodyNode = currentAST.find(n => n.type === 'body');
@@ -42,7 +81,12 @@ const getMockSocraticHint = (currentAST, targetRules, attemptHistory, studentMes
 
 export const aiService = {
   // 1. CT Journey — analyze answers of each thinking step
-  analyzeCTStep: async (step, question, studentAnswer, challengeContext) => {
+  analyzeCTStep: async (
+    step: string,
+    question: string,
+    studentAnswer: string,
+    challengeContext: Record<string, unknown>,
+  ): Promise<CtStepResult> => {
     try {
       const response = await api.post('/ai/ct-journey', {
         step,
@@ -51,9 +95,9 @@ export const aiService = {
         challenge_context: challengeContext
       });
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn("AI endpoint failed, using local simulation for CT Journey step:", step);
-      
+
       const textKws = ["judul", "h1", "h2", "paragraf", "p", "teks", "tulisan", "deskripsi", "nama", "lirik", "lagu", "keterampilan", "halaman", "item", "list", "li", "ul"];
       const visualKws = ["foto", "gambar", "img", "ilustrasi", "visual", "logo", "ikon", "video"];
       const styleKws = ["desain", "warna", "style", "css", "hiasan", "tampilan", "font", "background"];
@@ -81,16 +125,14 @@ export const aiService = {
           }
         }
         nextHint = "Langkah berikutnya: Abstraksi.";
-      } 
+      }
       else if (step === 'abstraction') {
         const items = studentAnswer.replace("Tiga bagian terpenting:", "").split(",").map(i => i.trim()).filter(Boolean);
-        
+
         let styleCount = 0;
-        let structCount = 0;
         items.forEach(item => {
           const itemLower = item.toLowerCase();
           if (styleKws.some(kw => itemLower.includes(kw))) styleCount++;
-          if (["body", "wadah", "div", "h1", "h2", "p", "paragraf", "list", "ul", "li"].some(kw => itemLower.includes(kw))) structCount++;
         });
 
         if (styleCount >= 2) {
@@ -101,19 +143,18 @@ export const aiService = {
           ctScoreDelta = 92;
         }
         nextHint = "Langkah berikutnya: Pengenalan Pola.";
-      } 
+      }
       else if (step === 'pattern') {
         const ansClean = studentAnswer.replace("Pengelompokan elemen:", "").trim();
-        let categories = {};
+        let categories: Record<string, string> = {};
         try {
           categories = JSON.parse(ansClean);
-        } catch (e) {
+        } catch {
           categories = {};
         }
 
-        const miscategorized = [];
-        const keys = Object.keys(categories);
-        keys.forEach(name => {
+        const miscategorized: string[] = [];
+        Object.keys(categories).forEach(name => {
           const nameLower = name.toLowerCase();
           const cat = categories[name];
           if (cat === "Teks") {
@@ -145,7 +186,7 @@ export const aiService = {
           ctScoreDelta = 95;
         }
         nextHint = "Langkah akhir: Algoritma.";
-      } 
+      }
       else if (step === 'algorithm') {
         const ansClean = studentAnswer.replace("Urutan langkah pembuatan:", "").trim();
         const steps = ansClean.split("->").map(s => s.trim()).filter(Boolean);
@@ -156,7 +197,7 @@ export const aiService = {
         } else {
           const firstStep = steps[0].toLowerCase();
           const lastStep = steps[steps.length - 1].toLowerCase();
-          
+
           const hasBodyFirst = firstStep.includes("body") || firstStep.includes("wadah") || firstStep.includes("utama");
           const hasStyleLast = lastStep.includes("style") || lastStep.includes("css") || lastStep.includes("hiasan") || lastStep.includes("menghias");
 
@@ -182,7 +223,21 @@ export const aiService = {
   },
 
   // 2. AI Tutor — Socratic helper inside the coding workspace
-  getTutorHint: async ({ currentAST, targetRules, attemptHistory, studentMessage, lessonContext, conversationHistory }) => {
+  getTutorHint: async ({
+    currentAST,
+    targetRules,
+    attemptHistory,
+    studentMessage,
+    lessonContext,
+    conversationHistory,
+  }: {
+    currentAST: AstNode[];
+    targetRules?: ValidationRule[] | null;
+    attemptHistory: unknown[];
+    studentMessage?: string | null;
+    lessonContext: string;
+    conversationHistory?: ChatMessage[] | null;
+  }): Promise<string> => {
     try {
       const response = await api.post('/ai/tutor', {
         current_ast: currentAST,
@@ -193,14 +248,18 @@ export const aiService = {
         conversation_history: conversationHistory
       });
       return response.data.hint;
-    } catch (error) {
+    } catch {
       console.warn("AI tutor endpoint failed, generating Socratic hint locally.");
       return getMockSocraticHint(currentAST, targetRules, attemptHistory, studentMessage, conversationHistory);
     }
   },
 
   // 3. CT Session Analyzer — calculates student CT scores at submission
-  analyzeCTSession: async (attemptHistory, ctJourneyAnswers, reflectionAnswers) => {
+  analyzeCTSession: async (
+    attemptHistory: unknown[],
+    ctJourneyAnswers: StepAnswers,
+    reflectionAnswers: Record<string, unknown>,
+  ): Promise<CtSessionResult> => {
     try {
       const response = await api.post('/ai/analyze-ct', {
         attempt_history: attemptHistory,
@@ -208,9 +267,9 @@ export const aiService = {
         reflection: reflectionAnswers
       });
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn("AI session analysis failed, calculating score locally.");
-      
+
       // Calculate a realistic score based on attempt history and reflection length
       const attempts = attemptHistory.length;
       const decompScore = 80 + Math.min(10, ctJourneyAnswers.decomposition.length * 2);
@@ -233,7 +292,11 @@ export const aiService = {
   },
 
   // 4. Project Scoring Assistant (For Teachers)
-  suggestProjectScore: async (submittedAST, rubrik, challengeContext) => {
+  suggestProjectScore: async (
+    submittedAST: AstNode[],
+    rubrik: Record<string, unknown>[],
+    challengeContext: Record<string, unknown>,
+  ) => {
     try {
       const response = await api.post('/ai/suggest-score', {
         ast: submittedAST,
@@ -241,7 +304,7 @@ export const aiService = {
         challenge_context: challengeContext
       });
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn("AI project scoring failed, creating suggestion locally.");
       return {
         suggested_scores: {
@@ -257,11 +320,11 @@ export const aiService = {
   },
 
   // 5. Classroom Insights (For Teacher Dashboard)
-  getClassInsights: async (roomId, pertemuanId) => {
+  getClassInsights: async (roomId: string, pertemuanId?: string | null) => {
     try {
       const response = await api.post('/ai/class-insights', { room_id: roomId, pertemuan_id: pertemuanId });
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn("AI class insights failed, returning empty offline fallback.");
       return {
         ct_class_average: 0,
@@ -273,7 +336,11 @@ export const aiService = {
   },
 
   // 6. AI Code Validation (For Learning Tasks)
-  validateCode: async (currentHTML, targetRules, lessonTitle) => {
+  validateCode: async (
+    currentHTML: string,
+    targetRules: ValidationRule[],
+    lessonTitle: string,
+  ): Promise<CodeValidationResult> => {
     try {
       const response = await api.post('/ai/validate-code', {
         current_html: currentHTML,
@@ -281,11 +348,11 @@ export const aiService = {
         lesson_title: lessonTitle
       });
       return response.data;
-    } catch (error) {
+    } catch {
       console.warn("AI code validation failed, running offline validation fallback.");
       // Fallback helper similar to backend offline logic
       const htmlLower = currentHTML.toLowerCase();
-      const missing = [];
+      const missing: string[] = [];
 
       // Reject leftover default placeholder text (student didn't fill real content)
       const defaultPlaceholders = ['judul baru', 'teks baru di sini.', 'item list', 'teks placeholder', 'teks area'];
@@ -328,4 +395,3 @@ export const aiService = {
     }
   }
 };
-

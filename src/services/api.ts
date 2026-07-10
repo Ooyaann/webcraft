@@ -1,12 +1,17 @@
-import axios from 'axios';
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 
-// Create Axios instance
-const API_URL = '/api'; // backend kini satu origin (Next.js route handlers)
+// Klien API (dari api.js, kini TypeScript).
+// Backend satu origin dengan UI (Next.js route handlers) — tanpa env var.
+const API_URL = '/api';
 
 const TOKEN_KEY = 'webcraft_token';
 const REFRESH_KEY = 'webcraft_refresh';
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -25,11 +30,18 @@ api.interceptors.request.use((config) => {
 });
 
 // --- Automatic access-token refresh on 401 ---------------------------------
-let isRefreshing = false;
-let pendingQueue = [];
+type QueueEntry = {
+  resolve: (token: string) => void;
+  reject: (err: unknown) => void;
+};
 
-const flushQueue = (error, token = null) => {
-  pendingQueue.forEach(({ resolve, reject }) => (error ? reject(error) : resolve(token)));
+let isRefreshing = false;
+let pendingQueue: QueueEntry[] = [];
+
+const flushQueue = (error: unknown, token: string | null = null) => {
+  pendingQueue.forEach(({ resolve, reject }) =>
+    error ? reject(error) : resolve(token as string),
+  );
   pendingQueue = [];
 };
 
@@ -45,12 +57,15 @@ const isAuthEndpoint = (url = '') =>
   url.includes('/auth/login') || url.includes('/auth/register') ||
   url.includes('/auth/refresh') || url.includes('/auth/logout');
 
+// Bentuk error validasi FastAPI/zod: {detail: [{loc, msg, type}]}
+type ValidationItem = { loc?: (string | number)[]; msg: string; type?: string };
+
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  async (error: AxiosError<{ detail?: unknown }>) => {
     // Normalize FastAPI 422 validation array errors to a clean string
     if (error.response?.data?.detail && Array.isArray(error.response.data.detail)) {
-      const formattedErrors = error.response.data.detail.map(d => {
+      const formattedErrors = (error.response.data.detail as ValidationItem[]).map(d => {
         const fieldName = d.loc && d.loc.length > 0 ? d.loc[d.loc.length - 1] : '';
         let message = d.msg;
         if (fieldName === 'password' && d.type === 'string_too_short') {
@@ -63,7 +78,9 @@ api.interceptors.response.use(
       error.response.data.detail = formattedErrors.join(', ');
     }
 
-    const original = error.config;
+    const original = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
     const status = error.response?.status;
 
     if (status !== 401 || !original || original._retry || isAuthEndpoint(original.url)) {
@@ -78,7 +95,7 @@ api.interceptors.response.use(
 
     // A refresh is already in flight — queue this request until it resolves.
     if (isRefreshing) {
-      return new Promise((resolve, reject) => {
+      return new Promise<string>((resolve, reject) => {
         pendingQueue.push({ resolve, reject });
       }).then((token) => {
         original.headers.Authorization = `Bearer ${token}`;
