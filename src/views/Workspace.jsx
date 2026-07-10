@@ -73,6 +73,60 @@ export default function Workspace({ isSandbox = false }) {
   const [isAnalyzingReflection, setIsAnalyzingReflection] = useState(false);
   const [finalReport, setFinalReport] = useState(null);
 
+  // --- Pembatas panel Triple-View yang bisa diseret (resize) ---
+  const [paletteWidth, setPaletteWidth] = useState(() => {
+    const saved = parseInt(localStorage.getItem('webcraft_palette_w') ?? '', 10);
+    return Number.isFinite(saved) ? Math.min(480, Math.max(200, saved)) : 280;
+  });
+  const [previewWidth, setPreviewWidth] = useState(() => {
+    const saved = parseInt(localStorage.getItem('webcraft_preview_w') ?? '', 10);
+    return Number.isFinite(saved) ? Math.min(700, Math.max(240, saved)) : 380;
+  });
+  const [isResizing, setIsResizing] = useState(false);
+
+  const startResize = (which) => (e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = which === 'palette' ? paletteWidth : previewWidth;
+    const handle = e.currentTarget;
+    setIsResizing(true);
+    // Pointer capture: event seret tetap mengalir ke pembatas walau kursor
+    // melintasi iframe preview (tanpa ini seretan "macet" di atas iframe).
+    try { handle.setPointerCapture(e.pointerId); } catch { /* event sintetik */ }
+
+    // Batas atas dinamis: editor tengah selalu kebagian ruang ≥ ~330px,
+    // berapa pun lebar layar (panel lain diukur saat seretan dimulai).
+    const maxPalette = Math.min(
+      480,
+      window.innerWidth - (showPreview ? previewWidth : 0) - 340,
+    );
+    const maxPreview = Math.min(700, window.innerWidth - paletteWidth - 340);
+
+    const onMove = (ev) => {
+      const delta = ev.clientX - startX;
+      // Lantai minimum diterapkan TERAKHIR agar selalu menang atas batas
+      // dinamis (di jendela sempit batas dinamis bisa < lantai).
+      if (which === 'palette') {
+        setPaletteWidth(Math.max(200, Math.min(maxPalette, startWidth + delta)));
+      } else {
+        // Pembatas kanan: geser ke kiri = preview melebar
+        setPreviewWidth(Math.max(240, Math.min(maxPreview, startWidth - delta)));
+      }
+    };
+    const onUp = () => {
+      setIsResizing(false);
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', onUp);
+      handle.removeEventListener('pointercancel', onUp);
+      // Simpan lebar terakhir agar layout diingat antar sesi
+      setPaletteWidth((w) => { localStorage.setItem('webcraft_palette_w', String(w)); return w; });
+      setPreviewWidth((w) => { localStorage.setItem('webcraft_preview_w', String(w)); return w; });
+    };
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', onUp);
+    handle.addEventListener('pointercancel', onUp);
+  };
+
   // Keyboard shortcuts for undo/redo (ignored while typing in a field).
   useEffect(() => {
     const handleKey = (e) => {
@@ -420,12 +474,19 @@ export default function Workspace({ isSandbox = false }) {
 
         <div className="flex-1 w-full flex items-stretch overflow-hidden">
           {/* Left Panel (Palette) */}
-          <div className="w-[280px] border-r-4 border-[#0F172A] h-full overflow-hidden bg-slate-50 shrink-0">
+          <div className="h-full overflow-hidden bg-slate-50 shrink-0" style={{ width: paletteWidth }}>
             <PaletBlok />
           </div>
 
+          {/* Pembatas geser: Palet ↔ Editor */}
+          <div
+            onPointerDown={startResize('palette')}
+            className="w-[6px] shrink-0 bg-[#0F172A] cursor-col-resize touch-none hover:bg-blue-600 active:bg-blue-600 transition-colors"
+            title="Seret untuk mengatur lebar palet blok"
+          />
+
           {/* Middle Panel (Editor: Kanvas & Code) */}
-          <div className="flex-1 h-full flex flex-col overflow-hidden bg-white border-r-4 border-[#0F172A]">
+          <div className="flex-1 h-full flex flex-col overflow-hidden bg-white min-w-0">
             <div className="bg-slate-50 border-b-4 border-[#0F172A] p-2.5 flex justify-start gap-2.5 shrink-0">
               <button
                 type="button"
@@ -462,10 +523,22 @@ export default function Workspace({ isSandbox = false }) {
             </div>
           </div>
 
+          {/* Pembatas geser: Editor ↔ Preview (statis saat preview disembunyikan) */}
+          <div
+            onPointerDown={showPreview ? startResize('preview') : undefined}
+            className={`w-[6px] shrink-0 bg-[#0F172A] touch-none transition-colors ${
+              showPreview ? 'cursor-col-resize hover:bg-blue-600 active:bg-blue-600' : ''
+            }`}
+            title={showPreview ? 'Seret untuk mengatur lebar preview' : undefined}
+          />
+
           {/* Right Panel (Live Preview Drawer) */}
-          <div className={`h-full flex flex-col bg-white shrink-0 transition-all duration-300 ${
-            showPreview ? 'w-[30%] min-w-[320px] max-w-[450px] opacity-100 visible' : 'w-0 min-w-0 opacity-0 invisible overflow-hidden'
-          }`}>
+          <div
+            className={`h-full flex flex-col bg-white shrink-0 ${isResizing ? '' : 'transition-all duration-300'} ${
+              showPreview ? 'opacity-100 visible' : 'opacity-0 invisible overflow-hidden'
+            }`}
+            style={{ width: showPreview ? previewWidth : 0 }}
+          >
             <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-b-4 border-[#0F172A] p-2 flex items-center justify-center gap-2 shrink-0 h-[52px] shadow-sm">
               <i className="ti ti-eye text-white text-base animate-pulse" />
               <span className="font-fredoka text-sm font-bold text-white tracking-wide">Hasil Live Preview</span>
