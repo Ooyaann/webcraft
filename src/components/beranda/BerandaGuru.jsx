@@ -67,7 +67,7 @@ export default function BerandaGuru({ user }) {
       </section>
 
       {/* Metrics Row */}
-      <section className="neo-stagger-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <section className="neo-stagger-2 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-gradient-to-tr from-blue-500 to-indigo-700 text-white border-4 border-[#0F172A] p-5.5 rounded-2xl shadow-[6px_6px_0px_#0F172A] flex items-center justify-between gap-4 hover:-translate-y-0.5 transition-all">
           <div className="flex flex-col gap-1.5">
             <span className="font-fredoka text-[11px] font-black text-indigo-100 uppercase tracking-widest block">Kelas Dikelola</span>
@@ -125,7 +125,7 @@ export default function BerandaGuru({ user }) {
                 key={room.id}
                 className="border-3 border-[#0F172A] p-5 rounded-2xl flex flex-col justify-between bg-gradient-to-br from-slate-50 to-indigo-50/10 hover:to-indigo-50/20 hover:-translate-y-0.5 transition-all shadow-[4px_4px_0px_#0F172A] text-left gap-5"
               >
-                <div className="flex justify-between items-start gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <h4 className="font-fredoka text-base md:text-lg font-bold text-[#0F172A]">{room.name}</h4>
                     <p className="font-nunito text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wide">

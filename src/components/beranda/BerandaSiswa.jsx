@@ -208,12 +208,12 @@ export default function BerandaSiswa({ user }) {
                 {activeTasks.map((t, index) => (
                   <div
                     key={t.id}
-                    className={`border-2 border-[#0F172A] p-3.5 rounded-xl flex justify-between items-center shadow-[3px_3px_0px_#0F172A] hover:-translate-y-1 active:translate-y-[1px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer ${
+                    className={`border-2 border-[#0F172A] p-3.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[3px_3px_0px_#0F172A] hover:-translate-y-1 active:translate-y-[1px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer ${
                       index % 2 === 0 ? 'bg-[#EFF6FF]' : 'bg-[#ECFDF5]' // Alternating light pastel blue and mint
                     }`}
                   >
-                    <div className="text-left min-w-0">
-                      <h4 className="font-fredoka text-sm font-bold text-[#0F172A] truncate">
+                    <div className="text-left min-w-0 w-full sm:w-auto">
+                      <h4 className="font-fredoka text-sm font-bold text-[#0F172A] line-clamp-2">
                         {t.judul}
                       </h4>
                       <span className={`inline-block px-2 py-0.5 border border-[#0F172A] rounded-md text-[8px] font-black uppercase mt-1.5 shadow-[1px_1px_0px_#0F172A] ${
@@ -229,7 +229,7 @@ export default function BerandaSiswa({ user }) {
                     </div>
                     <button
                       onClick={() => navigate(`/ruang-belajar/${activeRoom.id}/tugas/${t.id}`)}
-                      className="px-3.5 py-1.5 bg-[#FACC15] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-fredoka text-[10px] font-bold rounded-xl hover:-translate-y-0.5 active:translate-y-[1px] cursor-pointer transition-all shrink-0 ml-2"
+                      className="w-full sm:w-auto px-3.5 py-1.5 bg-[#FACC15] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-fredoka text-[10px] font-bold rounded-xl hover:-translate-y-0.5 active:translate-y-[1px] cursor-pointer transition-all shrink-0 flex items-center justify-center"
                     >
                       Mulai
                     </button>

@@ -531,7 +531,7 @@ export default function RoomDetail() {
                   </span>
 
                   <div
-                    className={`neo-card p-4.5 ${cardBg} ${borderClass} shadow-[4px_4px_0px_#0F172A] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${isUnlocked
+                    className={`neo-card p-4.5 ${cardBg} ${borderClass} shadow-[4px_4px_0px_#0F172A] flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-all ${isUnlocked
                         ? 'hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#0F172A] cursor-pointer'
                         : 'opacity-65 cursor-not-allowed shadow-[2px_2px_0px_#0F172A]'
                       }`}
@@ -559,11 +559,11 @@ export default function RoomDetail() {
                                   ? 'Siap Dikerjakan'
                                   : 'Terkunci'}
                         </span>
-
+ 
                         <span className={`text-[10px] font-nunito font-extrabold uppercase tracking-wide ${subText}`}>
                           {pert.cbl_engage_json?.big_idea || 'Coding'}
                         </span>
-
+ 
                         {pert.materi_list_json && pert.materi_list_json.length > 0 && (
                           <span className={`border px-2 py-0.5 rounded-lg text-[9px] font-bold flex items-center gap-1 ${isCompleted
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-250'
@@ -576,7 +576,7 @@ export default function RoomDetail() {
                           </span>
                         )}
                       </div>
-
+ 
                       <h4 className={`font-fredoka text-sm md:text-base font-bold ${cardText}`}>
                         {pert.judul}
                       </h4>
@@ -584,10 +584,10 @@ export default function RoomDetail() {
                         {pert.cbl_engage_json?.essential_question || 'Menggunakan konsep Computational Thinking.'}
                       </p>
                     </div>
-
-                    <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+ 
+                    <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
                       {isTeacher ? (
-                        <div className="flex flex-wrap gap-1.5 md:gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-wrap gap-1.5 justify-start lg:justify-end" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => handleTogglePublish(pert)}
                             className={`px-2 sm:px-3 py-1.5 border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer ${pert.is_published ? 'bg-indigo-50 text-indigo-750' : 'bg-slate-50 text-slate-500'
@@ -596,7 +596,7 @@ export default function RoomDetail() {
                             <i className={pert.is_published ? "ti ti-eye text-xs" : "ti ti-eye-off text-xs"} />
                             <span className="hidden sm:inline">{pert.is_published ? 'Sembunyikan' : 'Terbitkan'}</span>
                           </button>
-
+ 
                           <button
                             onClick={() => handleOpenEditModal(pert)}
                             className="px-2 sm:px-3 py-1.5 bg-yellow-400 text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer"
@@ -604,7 +604,7 @@ export default function RoomDetail() {
                             <i className="ti ti-edit text-xs" />
                             <span className="hidden sm:inline">Kelola</span>
                           </button>
-
+ 
                           <button
                             onClick={() => handleOpenRulesModal(pert)}
                             className="px-2 sm:px-3 py-1.5 bg-sky-50 text-sky-700 border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer"
@@ -612,10 +612,10 @@ export default function RoomDetail() {
                             <i className="ti ti-list-check text-xs" />
                             <span className="hidden sm:inline">Aturan</span>
                           </button>
-
+ 
                           <button
                             onClick={() => handleDeletePertemuan(pert.id)}
-                            className="px-2 sm:px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border-2 border-red-200 font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_rgba(239,68,68,0.15)] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer"
+                            className="px-2 sm:px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-650 border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer"
                           >
                             <i className="ti ti-trash text-xs" />
                             <span className="hidden sm:inline">Hapus</span>
@@ -695,12 +695,12 @@ export default function RoomDetail() {
                 </p>
               ) : (
                 members.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between gap-3 border-2 border-[#0F172A] rounded-xl p-3 bg-slate-50 shadow-[2px_2px_0px_#0F172A]">
-                    <div className="flex items-center gap-2.5 min-w-0">
+                  <div key={m.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-2 border-[#0F172A] rounded-xl p-3 bg-slate-50 shadow-[2px_2px_0px_#0F172A]">
+                    <div className="flex items-center gap-2.5 min-w-0 w-full sm:w-auto">
                       <div className="w-9 h-9 rounded-full bg-[#6366F1] text-white border-2 border-[#0F172A] flex items-center justify-center font-fredoka font-bold shrink-0">
                         {m.name?.charAt(0).toUpperCase()}
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="font-fredoka text-sm font-bold text-slate-800 truncate">{m.name}</p>
                         <p className="font-nunito text-[10px] font-bold text-slate-500 truncate">{m.email}</p>
                       </div>
@@ -721,9 +721,9 @@ export default function RoomDetail() {
                           .finally(() => setResettingId(null));
                       }}
                       disabled={resettingId === m.id}
-                      className="px-3 py-1.5 bg-amber-400 text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer transition-all shrink-0 disabled:opacity-50"
+                      className="w-full sm:w-auto px-3 py-1.5 bg-amber-400 text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer transition-all shrink-0 disabled:opacity-50 flex items-center justify-center gap-1"
                     >
-                      <i className={`ti ${resettingId === m.id ? 'ti-loader animate-spin' : 'ti-key'} mr-1`} />
+                      <i className={`ti ${resettingId === m.id ? 'ti-loader animate-spin' : 'ti-key'}`} />
                       Reset Password
                     </button>
                   </div>
