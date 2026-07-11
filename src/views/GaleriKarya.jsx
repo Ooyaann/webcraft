@@ -239,7 +239,7 @@ export default function GaleriKarya() {
       {isTeacher ? (
         <div className="flex flex-col gap-6">
           {/* Teacher Tab Switch */}
-          <div className="flex border-b-4 border-[#0F172A] gap-2 overflow-x-auto">
+          <div className="flex border-b-4 border-[#0F172A] gap-2 overflow-x-auto overflow-y-visible pt-1 pr-2">
             <button
               onClick={() => setActiveTab('perlu_dinilai')}
               className={`px-5 py-3 shrink-0 whitespace-nowrap font-fredoka font-bold border-2 border-b-0 border-[#0F172A] rounded-t-xl transition-all cursor-pointer ${activeTab === 'perlu_dinilai'
@@ -412,7 +412,7 @@ export default function GaleriKarya() {
         <div className="flex flex-col gap-6">
           {/* Student/Guest Tab Switcher */}
           {isStudent && (
-            <div className="flex border-b-4 border-[#0F172A] gap-2 overflow-x-auto">
+            <div className="flex border-b-4 border-[#0F172A] gap-2 overflow-x-auto overflow-y-visible pt-1 pr-2">
               <button
                 onClick={() => setStudentTab('karya_saya')}
                 className={`px-5 py-3 shrink-0 whitespace-nowrap font-fredoka font-bold border-2 border-b-0 border-[#0F172A] rounded-t-xl transition-all cursor-pointer ${studentTab === 'karya_saya'
