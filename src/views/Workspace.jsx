@@ -55,6 +55,24 @@ export default function Workspace({ isSandbox = false }) {
   const canUndo = astPast.length > 0;
   const canRedo = astFuture.length > 0;
 
+  // HP portrait: Triple-View butuh layar lebar → minta putar ke landscape.
+  const [isPortraitPhone, setIsPortraitPhone] = useState(false);
+  // ponytail: single flag for compact layout on short screens (mobile landscape)
+  const [isCompact, setIsCompact] = useState(false);
+  useEffect(() => {
+    const check = () => {
+      setIsPortraitPhone(window.innerWidth < 820 && window.innerHeight > window.innerWidth);
+      setIsCompact(window.innerHeight <= 500);
+    };
+    check();
+    window.addEventListener('resize', check);
+    window.addEventListener('orientationchange', check);
+    return () => {
+      window.removeEventListener('resize', check);
+      window.removeEventListener('orientationchange', check);
+    };
+  }, []);
+
   const [activeTab, setActiveTab] = useState('kanvas'); // 'kanvas' | 'preview' | 'code'
   const [validationErrors, setValidationErrors] = useState([]);
   const [showValidationResult, setShowValidationResult] = useState(false);
@@ -96,23 +114,7 @@ export default function Workspace({ isSandbox = false }) {
   const [isAnalyzingReflection, setIsAnalyzingReflection] = useState(false);
   const [finalReport, setFinalReport] = useState(null);
 
-  // HP portrait: Triple-View butuh layar lebar → minta putar ke landscape.
-  const [isPortraitPhone, setIsPortraitPhone] = useState(false);
-  // ponytail: single flag for compact layout on short screens (mobile landscape)
-  const [isCompact, setIsCompact] = useState(false);
-  useEffect(() => {
-    const check = () => {
-      setIsPortraitPhone(window.innerWidth < 820 && window.innerHeight > window.innerWidth);
-      setIsCompact(window.innerHeight <= 500);
-    };
-    check();
-    window.addEventListener('resize', check);
-    window.addEventListener('orientationchange', check);
-    return () => {
-      window.removeEventListener('resize', check);
-      window.removeEventListener('orientationchange', check);
-    };
-  }, []);
+
 
   // --- Pembatas panel Triple-View yang bisa diseret (resize) ---
   const [paletteWidth, setPaletteWidth] = useState(() => {
