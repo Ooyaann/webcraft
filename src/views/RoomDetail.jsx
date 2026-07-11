@@ -625,7 +625,7 @@ export default function RoomDetail() {
 
       {/* Classroom Announcement Modal */}
       {showAnnouncementModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-start overflow-y-auto p-4 pt-10 md:pt-16 pb-12">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-start overflow-y-auto p-4 pt-10 md:pt-16 pb-12">
           <div className="w-full max-w-md bg-white border-4 border-[#0F172A] rounded-[24px] shadow-[8px_8px_0px_#0F172A] flex flex-col my-auto relative">
             <div className="bg-[#FACC15] text-[#0F172A] px-6 py-4 flex justify-between items-center border-b-4 border-[#0F172A] rounded-t-[20px]">
               <h3 className="font-fredoka text-base font-bold flex items-center gap-1.5">
@@ -677,7 +677,7 @@ export default function RoomDetail() {
 
       {/* Add / Edit Meeting Modals */}
       {(showAddModal || showEditModal) && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-start overflow-y-auto p-4 md:p-6 pt-10 md:pt-16 pb-12">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-start overflow-y-auto p-4 md:p-6 pt-10 md:pt-16 pb-12">
           <div className="w-full max-w-2xl bg-white border-4 border-[#0F172A] rounded-[28px] shadow-[8px_8px_0px_#0F172A] flex flex-col my-auto relative overflow-hidden max-h-[85vh]">
             <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white px-6 py-4.5 flex justify-between items-center border-b-4 border-[#0F172A] shrink-0 rounded-t-[24px]">
               <h3 className="font-fredoka text-base font-bold flex items-center gap-1.5">

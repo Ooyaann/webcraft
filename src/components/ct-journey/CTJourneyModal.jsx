@@ -473,7 +473,7 @@ export default function CTJourneyModal({ isOpen, onClose, viewOnly = false }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex justify-center items-center p-4 md:p-6">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex justify-center items-center p-4 md:p-6">
       <div className="w-full max-w-4xl max-h-[92vh] bg-white border-4 border-[#0F172A] rounded-[28px] shadow-[8px_8px_0px_#0F172A] flex flex-col overflow-hidden relative">
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white px-6 py-4 flex justify-between items-center border-b-4 border-[#0F172A] shrink-0">

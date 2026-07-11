@@ -709,7 +709,7 @@ export default function GaleriKarya() {
 
       {/* Grading / Review Modal (Teacher only) */}
       {selectedSub && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white border-4 border-[#0F172A] shadow-[8px_8px_0px_#0F172A] max-w-4xl w-full max-h-[90vh] rounded-3xl overflow-hidden flex flex-col text-slate-800">
             {/* Header */}
             <div className="bg-[#3B82F6] text-white border-b-4 border-[#0F172A] p-5 flex justify-between items-center">
