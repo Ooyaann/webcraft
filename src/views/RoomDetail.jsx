@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from '@/lib/router-compat';
 import { useStore } from '../store/useStore';
 import api from '../services/api';
@@ -624,7 +625,7 @@ export default function RoomDetail() {
       </section>
 
       {/* Classroom Announcement Modal */}
-      {showAnnouncementModal && (
+      {showAnnouncementModal && typeof window !== 'undefined' && createPortal(
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-start overflow-y-auto p-4 pt-10 md:pt-16 pb-12">
           <div className="w-full max-w-md bg-white border-4 border-[#0F172A] rounded-[24px] shadow-[8px_8px_0px_#0F172A] flex flex-col my-auto relative">
             <div className="bg-[#FACC15] text-[#0F172A] px-6 py-4 flex justify-between items-center border-b-4 border-[#0F172A] rounded-t-[20px]">
@@ -672,11 +673,12 @@ export default function RoomDetail() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Add / Edit Meeting Modals */}
-      {(showAddModal || showEditModal) && (
+      {(showAddModal || showEditModal) && typeof window !== 'undefined' && createPortal(
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-start overflow-y-auto p-4 md:p-6 pt-10 md:pt-16 pb-12">
           <div className="w-full max-w-2xl bg-white border-4 border-[#0F172A] rounded-[28px] shadow-[8px_8px_0px_#0F172A] flex flex-col my-auto relative overflow-hidden max-h-[85vh]">
             <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white px-6 py-4.5 flex justify-between items-center border-b-4 border-[#0F172A] shrink-0 rounded-t-[24px]">
@@ -771,203 +773,178 @@ export default function RoomDetail() {
                       }}
                       className="px-3 py-1.5 bg-amber-50 border-2 border-amber-600 text-amber-700 font-fredoka text-[10px] font-bold rounded-lg cursor-pointer hover:bg-amber-100 transition-all"
                     >
-                      Portofolio Impian (Proyek)
+                      Proyek Portofolio (Project)
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Basic Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div className="sm:col-span-3">
+              {/* Judul & Big Idea */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                   <label className="font-fredoka font-bold text-slate-700 text-xs mb-1.5 block">Judul Pertemuan:</label>
                   <input
                     type="text"
                     value={judul}
                     onChange={(e) => setJudul(e.target.value)}
-                    placeholder="Contoh: Pertemuan 1: Lapisan Kerak Bumi"
-                    className="w-full neo-input text-xs font-semibold"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="font-fredoka font-bold text-slate-700 text-xs mb-1.5 block">Urutan / Minggu:</label>
-                  <input
-                    type="number"
-                    value={urutan}
-                    onChange={(e) => setUrutan(e.target.value)}
-                    className="w-full neo-input text-xs font-semibold"
-                    required
-                    min={1}
-                  />
-                </div>
-              </div>
-
-              {/* CBL Engage Section */}
-              <div className="border-2 border-[#0F172A] p-4 rounded-xl bg-slate-50 flex flex-col gap-4">
-                <h4 className="font-fredoka text-xs font-bold text-[#0F172A] uppercase tracking-wider border-b border-slate-200 pb-1.5 flex items-center gap-1">
-                  <i className="ti ti-bulb" />
-                  Konteks Pembelajaran (CBL Engage)
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-1">
-                    <label className="font-nunito font-extrabold text-[10px] text-slate-500 uppercase block mb-1">Topik Besar (Big Idea):</label>
-                    <input
-                      type="text"
-                      value={bigIdea}
-                      onChange={(e) => setBigIdea(e.target.value)}
-                      placeholder="Sains / Lingkungan / Dll"
-                      className="w-full neo-input text-xs"
-                      required
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="font-nunito font-extrabold text-[10px] text-slate-500 uppercase block mb-1">Pertanyaan Esensial (Essential Question):</label>
-                    <input
-                      type="text"
-                      value={essentialQuestion}
-                      onChange={(e) => setEssentialQuestion(e.target.value)}
-                      placeholder="Pertanyaan pemicu nalar komputasi..."
-                      className="w-full neo-input text-xs"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-nunito font-extrabold text-[10px] text-slate-500 uppercase block mb-1">Tantangan Praktik (Challenge):</label>
-                  <textarea
-                    rows={2}
-                    value={challenge}
-                    onChange={(e) => setChallenge(e.target.value)}
-                    placeholder="Instruksi tantangan merakit kode web siswa..."
+                    placeholder="contoh: Pertemuan 1: Pengenalan Tag HTML"
                     className="w-full neo-input text-xs"
                     required
+                    disabled={isActionLoading}
+                  />
+                </div>
+                <div>
+                  <label className="font-fredoka font-bold text-slate-700 text-xs mb-1.5 block">Big Idea (Topik Utama):</label>
+                  <input
+                    type="text"
+                    value={bigIdea}
+                    onChange={(e) => setBigIdea(e.target.value)}
+                    placeholder="contoh: Struktur & Semantik Web"
+                    className="w-full neo-input text-xs"
+                    required
+                    disabled={isActionLoading}
                   />
                 </div>
               </div>
 
-              {/* Guiding Questions */}
-              <div className="flex flex-col gap-2">
-                <label className="font-fredoka font-bold text-slate-700 text-xs block">Pertanyaan Pemandu (Guiding Questions):</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newGuiding}
-                    onChange={(e) => setNewGuiding(e.target.value)}
-                    placeholder="Tulis pertanyaan pemandu investigasi materi..."
-                    className="flex-1 neo-input text-xs"
-                  />
+              {/* Essential Question */}
+              <div>
+                <label className="font-fredoka font-bold text-slate-700 text-xs mb-1.5 block">Pertanyaan Pemantik (Essential Question):</label>
+                <input
+                  type="text"
+                  value={essentialQuestion}
+                  onChange={(e) => setEssentialQuestion(e.target.value)}
+                  placeholder="Pertanyaan mendalam untuk memicu rasa ingin tahu siswa..."
+                  className="w-full neo-input text-xs"
+                  required
+                  disabled={isActionLoading}
+                />
+              </div>
+
+              {/* Deskripsi Tantangan */}
+              <div>
+                <label className="font-fredoka font-bold text-slate-700 text-xs mb-1.5 block">Misi Tantangan Coding Siswa (Challenge):</label>
+                <textarea
+                  rows={3}
+                  value={challenge}
+                  onChange={(e) => setChallenge(e.target.value)}
+                  placeholder="Tuliskan misi instruksi tugas coding web yang harus dikerjakan secara visual oleh siswa di workspace..."
+                  className="w-full border-2 border-[#0F172A] rounded-xl px-3 py-2 text-xs font-nunito font-semibold focus:outline-none focus:bg-amber-50 shadow-[1.5px_1.5px_0px_#0F172A]"
+                  required
+                  disabled={isActionLoading}
+                />
+              </div>
+
+              {/* Pertanyaan Pemandu (Guiding Questions) */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="font-fredoka font-bold text-slate-700 text-xs">Pertanyaan Pemandu AI (Guiding Questions):</label>
                   <button
                     type="button"
-                    onClick={addGuiding}
-                    className="px-3 bg-blue-600 text-white border-2 border-[#0F172A] rounded-xl font-bold text-xs cursor-pointer shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                    onClick={addGuidingQuestion}
+                    className="px-2 py-1 bg-blue-50 border border-blue-600 text-blue-700 font-fredoka text-[9px] font-bold rounded-lg cursor-pointer"
                   >
-                    Tambah
+                    + Tambah Pertanyaan
                   </button>
                 </div>
-                {guidingQuestions.length > 0 && (
-                  <ul className="mt-1 border border-slate-200 rounded-xl p-2 bg-slate-50 space-y-1.5">
-                    {guidingQuestions.map((q, idx) => (
-                      <li key={idx} className="flex justify-between items-center text-xs font-nunito font-semibold text-slate-650 bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
-                        <span>{idx + 1}. {q}</span>
+                <div className="flex flex-col gap-2">
+                  {guidingQuestions.map((q, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <span className="font-fredoka font-bold text-xs text-slate-500 w-5 shrink-0">{idx + 1}.</span>
+                      <input
+                        type="text"
+                        value={q}
+                        onChange={(e) => updateGuidingQuestion(idx, e.target.value)}
+                        placeholder="Tulis pertanyaan pemandu AI..."
+                        className="flex-1 neo-input text-xs"
+                        required
+                      />
+                      {guidingQuestions.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => removeGuiding(idx)}
+                          onClick={() => removeGuidingQuestion(idx)}
                           className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer"
                         >
                           <i className="ti ti-trash text-sm" />
                         </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Reflection Questions */}
-              <div className="flex flex-col gap-2">
-                <label className="font-fredoka font-bold text-slate-700 text-xs block">Pertanyaan Refleksi Pasca-Coding:</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newReflection}
-                    onChange={(e) => setNewReflection(e.target.value)}
-                    placeholder="Tulis pertanyaan evaluasi reflektif..."
-                    className="flex-1 neo-input text-xs"
-                  />
+              {/* Pertanyaan Refleksi (Reflection Questions) */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="font-fredoka font-bold text-slate-700 text-xs">Pertanyaan Refleksi Mandiri (Reflection):</label>
                   <button
                     type="button"
-                    onClick={addReflection}
-                    className="px-3 bg-blue-600 text-white border-2 border-[#0F172A] rounded-xl font-bold text-xs cursor-pointer shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                    onClick={addReflectionQuestion}
+                    className="px-2 py-1 bg-[#EC4899]/10 border border-[#EC4899] text-[#EC4899] font-fredoka text-[9px] font-bold rounded-lg cursor-pointer"
                   >
-                    Tambah
+                    + Tambah Refleksi
                   </button>
                 </div>
-                {reflectionQuestions.length > 0 && (
-                  <ul className="mt-1 border border-slate-200 rounded-xl p-2 bg-slate-50 space-y-1.5">
-                    {reflectionQuestions.map((q, idx) => (
-                      <li key={idx} className="flex justify-between items-center text-xs font-nunito font-semibold text-slate-650 bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
-                        <span>{idx + 1}. {q}</span>
+                <div className="flex flex-col gap-2">
+                  {reflectionQuestions.map((q, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <span className="font-fredoka font-bold text-xs text-slate-500 w-5 shrink-0">{idx + 1}.</span>
+                      <input
+                        type="text"
+                        value={q}
+                        onChange={(e) => updateReflectionQuestion(idx, e.target.value)}
+                        placeholder="Tulis pertanyaan refleksi..."
+                        className="flex-1 neo-input text-xs"
+                        required
+                      />
+                      {reflectionQuestions.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => removeReflection(idx)}
+                          onClick={() => removeReflectionQuestion(idx)}
                           className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer"
                         >
                           <i className="ti ti-trash text-sm" />
                         </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Materials & Documents Section */}
-              <div className="flex flex-col gap-2">
-                <label className="font-fredoka font-bold text-slate-700 text-xs block">Materi & Berkas PDF / Link Dokumen:</label>
+              {/* Materi Pendukung (Materi List) */}
+              <div className="border-t border-dashed border-slate-200 pt-4 flex flex-col gap-3">
+                <label className="font-fredoka font-bold text-slate-700 text-xs block">Materi Pendukung (Link/Berkas):</label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={materiTitle}
                     onChange={(e) => setMateriTitle(e.target.value)}
-                    placeholder="Judul Materi (contoh: Buku Lapisan Bumi PDF)"
+                    placeholder="Judul Materi"
                     className="flex-1 neo-input text-xs"
+                    disabled={isActionLoading}
                   />
                   <input
                     type="url"
                     value={materiUrl}
                     onChange={(e) => setMateriUrl(e.target.value)}
-                    placeholder="URL Link (Drive, Youtube, Website)"
+                    placeholder="URL Link"
                     className="flex-1 neo-input text-xs"
+                    disabled={isActionLoading}
                   />
                   <button
                     type="button"
                     onClick={addMateri}
-                    className="px-4 py-2 bg-emerald-600 text-white border-2 border-[#0F172A] rounded-xl font-fredoka text-xs font-bold cursor-pointer shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-0 transition-all shrink-0"
+                    className="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg cursor-pointer"
                   >
-                    Tambah Materi
+                    Tambah
                   </button>
                 </div>
-                {materiList.length > 0 && (
-                  <ul className="mt-1 border border-slate-200 rounded-xl p-2 bg-slate-50 space-y-1.5">
-                    {materiList.map((m, idx) => (
-                      <li key={idx} className="flex justify-between items-center text-xs font-nunito font-semibold text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm">
-                        <div className="flex items-center gap-1.5 overflow-hidden">
-                          <i className="ti ti-file-text text-blue-600 text-base" />
-                          <span className="font-bold truncate">{m.title}</span>
-                          <span className="text-[9px] text-slate-400 font-normal truncate">({m.url})</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeMateri(idx)}
-                          className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer shrink-0"
-                        >
-                          <i className="ti ti-trash text-sm" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                {materiList.map((m, idx) => (
+                  <div key={idx} className="flex justify-between items-center bg-slate-100 p-2 rounded-lg text-[10px]">
+                    <span className="font-bold">{m.title}</span>
+                    <button type="button" onClick={() => removeMateri(idx)} className="text-red-500">Hapus</button>
+                  </div>
+                ))}
               </div>
 
               {/* Action Buttons */}
@@ -1017,7 +994,8 @@ export default function RoomDetail() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Validator Rules Editor Modal (Teacher) */}

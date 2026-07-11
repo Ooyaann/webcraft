@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from '@/lib/router-compat';
 import { useStore } from '../store/useStore';
 import { validateAST, toFormattedCode } from '../services/astUtils';
@@ -690,7 +691,7 @@ export default function Workspace({ isSandbox = false }) {
       {!isSandbox && <AITutorChat />}
 
       {/* Reflection Post-coding Modal */}
-      {showReflectionModal && (
+      {showReflectionModal && typeof window !== 'undefined' && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="w-full max-w-2xl bg-white border-4 border-[#0F172A] rounded-2xl shadow-[8px_8px_0px_#0F172A] flex flex-col max-h-[90vh]">
             <div className="bg-emerald-500 text-white px-6 py-4 flex items-center gap-2 rounded-t-xl border-b-4 border-[#0F172A]">
@@ -790,7 +791,8 @@ export default function Workspace({ isSandbox = false }) {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Workspace Onboarding Guide Tutorial Modal */}
