@@ -93,17 +93,17 @@ export default function Workspace({ isSandbox = false }) {
 
   // Open mission popup on mount or when onboarding closes
   useEffect(() => {
-    if (isCompact && activeLevelConfig?.misi && !isSandbox) {
+    if (isCompact && activeLevelConfig?.misi) {
       const hideOnboarding = localStorage.getItem('webcraft_hide_onboarding') === 'true';
       if (hideOnboarding) {
         setShowMissionPopup(true);
       }
     }
-  }, [isCompact, activeLevelConfig, isSandbox]);
+  }, [isCompact, activeLevelConfig]);
 
   const handleOnboardingClose = () => {
     setIsOnboardingOpen(false);
-    if (isCompact && activeLevelConfig?.misi && !isSandbox) {
+    if (isCompact && activeLevelConfig?.misi) {
       setShowMissionPopup(true);
     }
   };
@@ -552,13 +552,17 @@ export default function Workspace({ isSandbox = false }) {
 
           {/* Middle Panel (Editor: Kanvas & Code & Preview) */}
           <div className="flex-1 h-full flex flex-col overflow-hidden bg-white min-w-0">
-            <div className={`bg-slate-50 border-b-4 border-[#0F172A] flex justify-between items-center shrink-0 ${isCompact ? 'p-1 gap-1' : 'p-2.5 gap-2.5'}`}>
+            <div className={`bg-slate-50 border-b-4 border-[#0F172A] flex justify-between items-center shrink-0 ${isCompact ? 'py-1.5 px-3 gap-2' : 'p-2.5 gap-2.5'}`}>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setActiveTab('kanvas')}
-                  className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2 py-0.5 text-[10px]' : 'px-4.5 py-2 text-xs'} ${activeTab === 'kanvas'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-none translate-y-[1px]'
+                  className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${
+                    isCompact
+                      ? `h-8 ${activeTab === 'kanvas' ? 'px-3 text-[10px]' : 'w-8 text-xs'}`
+                      : 'px-4.5 py-2 text-xs'
+                  } ${activeTab === 'kanvas'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-none translate-y-[0.5px]'
                       : 'bg-white text-slate-600 hover:bg-slate-100/75'
                     }`}
                 >
@@ -569,8 +573,12 @@ export default function Workspace({ isSandbox = false }) {
                 <button
                   type="button"
                   onClick={() => setActiveTab('code')}
-                  className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2 py-0.5 text-[10px]' : 'px-4.5 py-2 text-xs'} ${activeTab === 'code'
-                      ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-none translate-y-[1px]'
+                  className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${
+                    isCompact
+                      ? `h-8 ${activeTab === 'code' ? 'px-3 text-[10px]' : 'w-8 text-xs'}`
+                      : 'px-4.5 py-2 text-xs'
+                  } ${activeTab === 'code'
+                      ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-none translate-y-[0.5px]'
                       : 'bg-white text-slate-600 hover:bg-slate-100/75'
                     }`}
                 >
@@ -582,8 +590,10 @@ export default function Workspace({ isSandbox = false }) {
                   <button
                     type="button"
                     onClick={() => setActiveTab('preview')}
-                    className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] px-2 py-0.5 text-[10px] ${activeTab === 'preview'
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-none translate-y-[1px]'
+                    className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${
+                      activeTab === 'preview' ? 'h-8 px-3 text-[10px]' : 'h-8 w-8 text-xs'
+                    } ${activeTab === 'preview'
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-none translate-y-[0.5px]'
                         : 'bg-white text-slate-600 hover:bg-slate-100/75'
                       }`}
                   >
@@ -592,12 +602,12 @@ export default function Workspace({ isSandbox = false }) {
                   </button>
                 )}
               </div>
-
+              
               {isCompact && (
-                <div className="flex items-center gap-1 ml-auto">
+                <div className="flex items-center gap-1.5 ml-auto">
                   {/* Action Phase Badge (Dot/Minimal version) */}
-                  <span className="h-5.5 w-5.5 rounded bg-amber-400 border-2 border-[#0F172A] flex items-center justify-center shadow-[1px_1px_0px_#0F172A]" title="Fase Action">
-                    <i className="ti ti-rocket text-[10px] text-[#0F172A]" />
+                  <span className="w-8 h-8 rounded-lg bg-amber-400 border-2 border-[#0F172A] flex items-center justify-center shadow-[1.5px_1.5px_0px_#0F172A] shrink-0" title="Fase Action">
+                    <i className="ti ti-rocket text-[12px] text-[#0F172A]" />
                   </span>
 
                   {/* Undo Button */}
@@ -605,9 +615,9 @@ export default function Workspace({ isSandbox = false }) {
                     onClick={undo}
                     disabled={!canUndo}
                     title="Urungkan (Ctrl+Z)"
-                    className="h-5.5 w-5.5 border-2 border-[#0F172A] rounded bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px]"
+                    className="w-8 h-8 border-2 border-[#0F172A] rounded-lg bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px] shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5"
                   >
-                    <i className="ti ti-arrow-back-up text-xs font-bold" />
+                    <i className="ti ti-arrow-back-up text-sm font-bold" />
                   </button>
 
                   {/* Redo Button */}
@@ -615,20 +625,20 @@ export default function Workspace({ isSandbox = false }) {
                     onClick={redo}
                     disabled={!canRedo}
                     title="Ulangi (Ctrl+Y)"
-                    className="h-5.5 w-5.5 border-2 border-[#0F172A] rounded bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px]"
+                    className="w-8 h-8 border-2 border-[#0F172A] rounded-lg bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px] shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5"
                   >
-                    <i className="ti ti-arrow-forward-up text-xs font-bold" />
+                    <i className="ti ti-arrow-forward-up text-sm font-bold" />
                   </button>
 
                   {/* Misi / Challenge Info Button */}
-                  {!isSandbox && activeLevelConfig?.misi && (
+                  {activeLevelConfig?.misi && (
                     <button
                       type="button"
                       onClick={() => setShowMissionPopup(true)}
-                      title="Lihat Misi Pembelajaran"
-                      className="h-5.5 w-5.5 border-2 border-blue-600 rounded bg-blue-50 text-blue-650 hover:bg-blue-100 flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px] shadow-[1px_1px_0px_rgba(59,130,246,0.2)] animate-pulse"
+                      title={isSandbox ? "Lihat Sambutan Sandbox" : "Lihat Misi Pembelajaran"}
+                      className="w-8 h-8 border-2 border-[#0F172A] rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px] shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 animate-pulse"
                     >
-                      <i className="ti ti-target text-xs font-bold" />
+                      <i className={`ti ${isSandbox ? 'ti-flask text-xs' : 'ti-target text-xs'} text-white font-bold`} />
                     </button>
                   )}
 
@@ -637,13 +647,13 @@ export default function Workspace({ isSandbox = false }) {
                     type="button"
                     onClick={() => setIsOnboardingOpen(true)}
                     title="Bantuan Panduan"
-                    className="h-5.5 w-5.5 border-2 border-indigo-500 rounded bg-indigo-50 text-indigo-650 hover:bg-indigo-100 flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px]"
+                    className="w-8 h-8 border-2 border-[#0F172A] rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 text-white flex items-center justify-center cursor-pointer transition-all active:translate-y-[0.5px] shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5"
                   >
-                    <i className="ti ti-help text-xs font-bold" />
+                    <i className="ti ti-help text-sm text-white font-bold" />
                   </button>
 
                   {/* Divider line */}
-                  <span className="w-[1.5px] h-4 bg-slate-300 mx-0.5"></span>
+                  <span className="w-[1.5px] h-4 bg-slate-350 mx-0.5"></span>
 
                   {/* Exit / Back Button */}
                   <button
@@ -653,9 +663,9 @@ export default function Workspace({ isSandbox = false }) {
                       }
                     }}
                     title="Keluar dari Workspace"
-                    className="px-2 py-0.5 border-2 border-red-500 rounded bg-red-50 text-red-650 hover:bg-red-100 flex items-center justify-center gap-0.5 cursor-pointer font-fredoka text-[9.5px] font-bold shadow-[1px_1px_0px_rgba(239,68,68,0.1)] active:translate-y-[0.5px]"
+                    className="px-3 h-8 border-2 border-[#0F172A] rounded-lg bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center gap-1 cursor-pointer font-fredoka text-[10px] font-black shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] transition-all"
                   >
-                    <i className="ti ti-arrow-left text-[10px]" />
+                    <i className="ti ti-arrow-left text-[11px]" />
                     Keluar
                   </button>
                 </div>
@@ -946,10 +956,12 @@ export default function Workspace({ isSandbox = false }) {
       {showMissionPopup && typeof window !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="relative bg-white w-full max-w-md border-4 border-[#0F172A] rounded-2xl shadow-[6px_6px_0px_#0F172A] overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-650 text-white px-5 py-4 border-b-4 border-[#0F172A] flex justify-between items-center">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-4 border-b-4 border-[#0F172A] flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <i className="ti ti-target text-xl text-yellow-350 animate-pulse animate-duration-1000" />
-                <h3 className="font-fredoka text-sm font-black tracking-wide leading-none text-white">Misi Pembelajaran</h3>
+                <i className={`ti ${isSandbox ? 'ti-flask text-yellow-350 animate-bounce' : 'ti-target text-yellow-350 animate-pulse'} text-xl`} />
+                <h3 className="font-fredoka text-sm font-black tracking-wide leading-none text-white">
+                  {isSandbox ? 'Sambutan Sandbox' : 'Misi Pembelajaran'}
+                </h3>
               </div>
               <button
                 onClick={() => setShowMissionPopup(false)}
@@ -961,14 +973,18 @@ export default function Workspace({ isSandbox = false }) {
 
             <div className="p-5 overflow-y-auto text-left flex flex-col gap-4">
               <div>
-                <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-600 block mb-1">Misi Modul</span>
+                <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-600 block mb-1">
+                  {isSandbox ? 'Informasi Sandbox' : 'Misi Modul'}
+                </span>
                 <h4 className="font-fredoka text-sm font-bold text-slate-800">
-                  {activeLevelConfig?.judul || 'Misi Coding Web'}
+                  {isSandbox ? 'Ruang Eksperimen Bebas' : activeLevelConfig?.judul}
                 </h4>
               </div>
 
               <div className="border-2 border-[#0F172A] rounded-xl p-3.5 bg-indigo-50/40 shadow-[2px_2px_0px_rgba(0,0,0,0.05)]">
-                <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-500 block mb-1">Tantangan Praktik</span>
+                <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-500 block mb-1">
+                  {isSandbox ? 'Tentang Sandbox' : 'Tantangan Praktik'}
+                </span>
                 <p className="font-nunito text-xs text-slate-700 font-extrabold leading-relaxed whitespace-pre-line">
                   {activeLevelConfig?.misi}
                 </p>
@@ -978,7 +994,13 @@ export default function Workspace({ isSandbox = false }) {
                 <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-slate-500 block">Petunjuk Pengerjaan</span>
                 <div className="flex items-start gap-1.5 text-xs font-nunito font-bold text-slate-600">
                   <i className="ti ti-info-circle text-blue-500 mt-0.5" />
-                  <span>Rakit blok HTML di kanvas koding lalu uji dan kirim hasilnya! Anda bisa menekan tombol target (<i className="ti ti-target inline text-blue-600" />) untuk melihat misi ini lagi.</span>
+                  <span>
+                    {isSandbox ? (
+                      <>Di sini Anda bebas menyusun blok HTML apa saja. Hasil koding langsung tampil di Live Preview! Tekan tombol lab (<i className="ti ti-flask inline text-blue-600" />) untuk membaca sambutan ini kembali.</>
+                    ) : (
+                      <>Rakit blok HTML di kanvas koding lalu uji dan kirim hasilnya! Anda bisa menekan tombol target (<i className="ti ti-target inline text-blue-600" />) untuk melihat misi ini lagi.</>
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
@@ -988,7 +1010,7 @@ export default function Workspace({ isSandbox = false }) {
                 onClick={() => setShowMissionPopup(false)}
                 className="px-5 py-2 bg-blue-600 text-white border-2 border-[#0F172A] rounded-xl font-fredoka text-xs font-bold shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] hover:shadow-[3px_3px_0px_#0F172A] active:shadow-[1px_1px_0px_#0F172A] cursor-pointer transition-all"
               >
-                Mulai Misi!
+                {isSandbox ? 'Mulai Eksperimen!' : 'Mulai Misi!'}
               </button>
             </div>
           </div>

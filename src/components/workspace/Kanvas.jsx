@@ -24,15 +24,6 @@ export default function Kanvas({ isCompact = false }) {
             Susun elemen web Anda dengan susunan bersarang (nesting) di bawah ini.
           </p>}
         </div>
-        
-        <button
-          onClick={handleReset}
-          className={`bg-red-50 hover:bg-red-100 border-2 border-[#0F172A] text-red-700 font-fredoka font-bold rounded shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] cursor-pointer transition-all flex items-center gap-1 ${isCompact ? 'px-1.5 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]'}`}
-          title="Reset Kanvas"
-        >
-          <i className="ti ti-rotate-clockwise text-xs" />
-          Reset
-        </button>
       </div>
 
       {/* AST Render Area */}
