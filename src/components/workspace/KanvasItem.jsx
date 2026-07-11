@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/useStore';
 
-export default function KanvasItem({ node }) {
+export default function KanvasItem({ node, isCompact = false }) {
   const {
     selectedContainerId,
     setSelectedContainerId,
@@ -129,9 +129,13 @@ export default function KanvasItem({ node }) {
       onDragOver={node.id !== 'body-root' ? handleDragOverCard : undefined}
       onDragLeave={node.id !== 'body-root' ? handleDragLeaveCard : undefined}
       onDrop={node.id !== 'body-root' ? handleDropCard : undefined}
-      className={`relative border-2 border-[#0F172A] rounded-xl overflow-hidden bg-white text-left transition-all ${isContainer ? 'my-3 shadow-[2px_2px_0px_#0F172A]' : 'my-2'
-        } ${isSelected && isContainer ? 'ring-4 ring-blue-500/50 -translate-y-[1px]' : ''
-        }`}
+      className={`relative border-2 border-[#0F172A] overflow-hidden bg-white text-left transition-all ${
+        isCompact ? 'rounded-lg' : 'rounded-xl'
+      } ${
+        isContainer
+          ? `${isCompact ? 'my-1.5 shadow-[1.5px_1.5px_0px_#0F172A]' : 'my-3 shadow-[2px_2px_0px_#0F172A]'}`
+          : `${isCompact ? 'my-1' : 'my-2'}`
+      } ${isSelected && isContainer ? 'ring-4 ring-blue-500/50 -translate-y-[1px]' : ''}`}
     >
       {/* Sibling insertion markers */}
       {dropPreview === 'before' && (
@@ -148,21 +152,22 @@ export default function KanvasItem({ node }) {
           e.dataTransfer.effectAllowed = 'move';
           e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'existing', id: node.id }));
         }}
-        className={`px-3 py-1.5 flex justify-between items-center text-xs font-fredoka font-bold border-[#0F172A] ${getHeaderStyle()} ${node.id !== 'body-root' ? 'cursor-grab active:cursor-grabbing select-none' : ''
-          }`}
+        className={`flex justify-between items-center font-fredoka font-bold border-[#0F172A] ${getHeaderStyle()} ${
+          node.id !== 'body-root' ? 'cursor-grab active:cursor-grabbing select-none' : ''
+        } ${isCompact ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1.5 text-xs'}`}
       >
-        <div className="flex items-center gap-1.5">
-          <i className={`${getIconClass()} text-sm`} aria-hidden />
+        <div className="flex items-center gap-1">
+          <i className={`${getIconClass()} ${isCompact ? 'text-xs' : 'text-sm'}`} aria-hidden />
           <span>&lt;{node.type}&gt;</span>
           {isSelected && isContainer && (
-            <span className="text-[9px] bg-white text-blue-600 px-1.5 py-0.5 rounded border border-blue-600">
+            <span className={`bg-white text-blue-600 rounded border border-blue-600 font-extrabold ${isCompact ? 'text-[7.5px] px-1 py-0' : 'text-[9px] px-1.5 py-0.5'}`}>
               Wadah Aktif
             </span>
           )}
         </div>
 
         {node.id !== 'body-root' && (
-          <div className="flex items-center gap-1.5">
+          <div className={`flex items-center ${isCompact ? 'gap-1' : 'gap-1.5'}`}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -171,7 +176,7 @@ export default function KanvasItem({ node }) {
               title="Pindahkan ke atas"
               className="text-[#0F172A] hover:bg-[#0F172A]/10 p-0.5 rounded transition-colors cursor-pointer flex items-center"
             >
-              <i className="ti ti-chevron-up text-sm font-bold" />
+              <i className={`ti ti-chevron-up font-bold ${isCompact ? 'text-xs' : 'text-sm'}`} />
             </button>
             <button
               onClick={(e) => {
@@ -181,51 +186,54 @@ export default function KanvasItem({ node }) {
               title="Pindahkan ke bawah"
               className="text-[#0F172A] hover:bg-[#0F172A]/10 p-0.5 rounded transition-colors cursor-pointer flex items-center"
             >
-              <i className="ti ti-chevron-down text-sm font-bold" />
+              <i className={`ti ti-chevron-down font-bold ${isCompact ? 'text-xs' : 'text-sm'}`} />
             </button>
             <button
               onClick={handleDelete}
               className="text-[#0F172A] hover:text-red-500 font-bold p-0.5 rounded transition-colors cursor-pointer flex items-center"
             >
-              <i className="ti ti-trash text-sm" />
+              <i className={`ti ti-trash ${isCompact ? 'text-xs' : 'text-sm'}`} />
             </button>
           </div>
         )}
       </div>
 
       {/* Node Body Content */}
-      <div className="p-3">
+      <div className={`${isCompact ? 'p-1.5' : 'p-3'}`}>
         {isContainer ? (
           <div
             onDragOver={handleDragOverChildren}
             onDragLeave={handleDragLeaveChildren}
             onDrop={handleDropChildren}
-            className={`flex flex-col gap-2 min-h-[50px] p-2 rounded-lg transition-all ${isDragOverChildren
+            className={`flex flex-col rounded-lg transition-all ${
+              isDragOverChildren
                 ? 'border-solid border-blue-500 bg-blue-50/20 border-4'
                 : isSelected
                   ? 'border-blue-500 bg-blue-50/10 border-dashed border-4'
                   : 'bg-slate-50/50 border-2 border-dashed border-slate-300'
-              }`}
+            } ${isCompact ? 'p-1.5 gap-1.5 min-h-[30px]' : 'p-2 gap-2 min-h-[50px]'}`}
           >
             {node.children && node.children.length > 0 ? (
               node.children.map(child => (
-                <KanvasItem key={child.id} node={child} />
+                <KanvasItem key={child.id} node={child} isCompact={isCompact} />
               ))
             ) : (
-              <p className="text-[10px] text-slate-400 font-nunito font-bold text-center py-4">
+              <p className={`text-slate-400 font-nunito font-bold text-center ${isCompact ? 'text-[8.5px] py-1.5' : 'text-[10px] py-4'}`}>
                 Wadah kosong. Tambahkan blok di sini!
               </p>
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-1.5">
+          <div className={`flex flex-col ${isCompact ? 'gap-1' : 'gap-1.5'}`}>
             {node.type === 'style' ? (
               <textarea
                 value={node.content}
                 onChange={handleContentChange}
-                rows={3}
+                rows={isCompact ? 2 : 3}
                 placeholder="/* Tulis kode CSS di sini */&#10;body { background-color: #E0F2FE; }&#10;h1 { color: #EC4899; }"
-                className="w-full px-2.5 py-1.5 bg-white border-2 border-[#0F172A] rounded-lg font-mono text-xs focus:outline-none leading-normal font-bold"
+                className={`w-full bg-white border-2 border-[#0F172A] rounded-lg font-mono focus:outline-none leading-normal font-bold ${
+                  isCompact ? 'px-1.5 py-1 text-[10px]' : 'px-2.5 py-1.5 text-xs'
+                }`}
               />
             ) : node.type === 'img' ? (
               <input
@@ -233,7 +241,9 @@ export default function KanvasItem({ node }) {
                 value={node.content}
                 onChange={handleContentChange}
                 placeholder="Masukkan tautan/URL gambar di sini..."
-                className="w-full border-2 border-[#0F172A] rounded-lg bg-white px-2.5 py-1.5 font-bold font-nunito text-xs focus:outline-none"
+                className={`w-full border-2 border-[#0F172A] rounded-lg bg-white font-bold font-nunito focus:outline-none ${
+                  isCompact ? 'px-1.5 py-1 text-[10px]' : 'px-2.5 py-1.5 text-xs'
+                }`}
               />
             ) : (
               <input
@@ -241,7 +251,9 @@ export default function KanvasItem({ node }) {
                 value={node.content}
                 onChange={handleContentChange}
                 placeholder="Tulis konten teks di sini..."
-                className="w-full border-2 border-[#0F172A] rounded-lg bg-white px-2.5 py-1.5 font-bold font-nunito text-xs focus:outline-none"
+                className={`w-full border-2 border-[#0F172A] rounded-lg bg-white font-bold font-nunito focus:outline-none ${
+                  isCompact ? 'px-1.5 py-1 text-[10px]' : 'px-2.5 py-1.5 text-xs'
+                }`}
               />
             )}
           </div>

@@ -450,16 +450,18 @@ export default function Workspace({ isSandbox = false }) {
             {!isCompact && <span className="hidden sm:inline">Panduan</span>}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setShowPreview(prev => !prev)}
-            className={`border-2 border-slate-700 font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2 py-1 text-[10px]' : 'px-3 py-1.5 text-xs'} ${
-              showPreview ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-800 text-slate-350 hover:bg-slate-700'
-            }`}
-          >
-            <i className={`ti ${showPreview ? 'ti-layout-sidebar-right-collapse' : 'ti-layout-sidebar-right-expand'} ${isCompact ? 'text-xs' : 'text-sm'}`} />
-            {!isCompact && <span className="hidden sm:inline">{showPreview ? 'Sembunyikan Preview' : 'Tampilkan Preview'}</span>}
-          </button>
+          {!isCompact && (
+            <button
+              type="button"
+              onClick={() => setShowPreview(prev => !prev)}
+              className={`border-2 border-slate-700 font-fredoka font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px] px-3 py-1.5 text-xs ${
+                showPreview ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-800 text-slate-350 hover:bg-slate-700'
+              }`}
+            >
+              <i className={`ti ${showPreview ? 'ti-layout-sidebar-right-collapse' : 'ti-layout-sidebar-right-expand'} text-sm`} />
+              <span className="hidden sm:inline">{showPreview ? 'Sembunyikan Preview' : 'Tampilkan Preview'}</span>
+            </button>
+          )}
 
           <div className="flex items-center gap-1">
             <button
@@ -527,7 +529,7 @@ export default function Workspace({ isSandbox = false }) {
             title="Seret untuk mengatur lebar palet blok"
           />
 
-          {/* Middle Panel (Editor: Kanvas & Code) */}
+          {/* Middle Panel (Editor: Kanvas & Code & Preview) */}
           <div className="flex-1 h-full flex flex-col overflow-hidden bg-white min-w-0">
             <div className={`bg-slate-50 border-b-4 border-[#0F172A] flex justify-start shrink-0 ${isCompact ? 'p-1 gap-1.5' : 'p-2.5 gap-2.5'}`}>
               <button
@@ -553,6 +555,20 @@ export default function Workspace({ isSandbox = false }) {
                 <i className={`ti ti-code ${isCompact ? 'text-xs' : 'text-sm'}`} />
                 Kode HTML
               </button>
+
+              {isCompact && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('preview')}
+                  className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2.5 py-1 text-[10px]' : 'px-4.5 py-2 text-xs'} ${activeTab === 'preview'
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-650 text-white shadow-none translate-y-[1px]'
+                      : 'bg-white text-slate-600 hover:bg-slate-100/75'
+                    }`}
+                >
+                  <i className={`ti ti-eye ${isCompact ? 'text-xs' : 'text-sm'}`} />
+                  Live Preview
+                </button>
+              )}
             </div>
 
             <div className="flex-1 w-full relative overflow-y-auto bg-slate-50">
@@ -562,34 +578,43 @@ export default function Workspace({ isSandbox = false }) {
               <div className={`absolute inset-0 w-full h-full p-4 flex flex-col ${activeTab === 'code' ? 'z-10 opacity-100 font-mono' : 'z-0 opacity-0 pointer-events-none'}`}>
                 <CodePanel />
               </div>
+              {isCompact && (
+                <div className={`absolute inset-0 w-full h-full p-4 flex flex-col bg-white overflow-y-auto ${activeTab === 'preview' ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'}`}>
+                  <PreviewPanel />
+                </div>
+              )}
             </div>
           </div>
 
           {/* Pembatas geser: Editor ↔ Preview (statis saat preview disembunyikan) */}
-          <div
-            onPointerDown={showPreview ? startResize('preview') : undefined}
-            className={`w-[6px] shrink-0 bg-[#0F172A] touch-none transition-colors ${
-              showPreview ? 'cursor-col-resize hover:bg-blue-600 active:bg-blue-600' : ''
-            }`}
-            title={showPreview ? 'Seret untuk mengatur lebar preview' : undefined}
-          />
+          {!isCompact && (
+            <div
+              onPointerDown={showPreview ? startResize('preview') : undefined}
+              className={`w-[6px] shrink-0 bg-[#0F172A] touch-none transition-colors ${
+                showPreview ? 'cursor-col-resize hover:bg-blue-600 active:bg-blue-600' : ''
+              }`}
+              title={showPreview ? 'Seret untuk mengatur lebar preview' : undefined}
+            />
+          )}
 
           {/* Right Panel (Live Preview Drawer) */}
-          <div
-            className={`h-full flex flex-col bg-white shrink-0 ${isResizing ? '' : 'transition-all duration-300'} ${
-              showPreview ? 'opacity-100 visible' : 'opacity-0 invisible overflow-hidden'
-            }`}
-            style={{ width: showPreview ? previewWidth : 0 }}
-          >
-            <div className={`bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-b-4 border-[#0F172A] flex items-center justify-center gap-1.5 shrink-0 shadow-sm ${isCompact ? 'py-1 px-2' : 'p-2 h-[52px]'}`}>
-              <i className={`ti ti-eye text-white ${isCompact ? 'text-xs' : 'text-base'} animate-pulse`} />
-              <span className={`font-fredoka font-bold text-white tracking-wide ${isCompact ? 'text-[10px]' : 'text-sm'}`}>Live Preview</span>
+          {!isCompact && (
+            <div
+              className={`h-full flex flex-col bg-white shrink-0 ${isResizing ? '' : 'transition-all duration-300'} ${
+                showPreview ? 'opacity-100 visible' : 'opacity-0 invisible overflow-hidden'
+              }`}
+              style={{ width: showPreview ? previewWidth : 0 }}
+            >
+              <div className={`bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-b-4 border-[#0F172A] flex items-center justify-center gap-1.5 shrink-0 shadow-sm ${isCompact ? 'py-1 px-2' : 'p-2 h-[52px]'}`}>
+                <i className={`ti ti-eye text-white ${isCompact ? 'text-xs' : 'text-base'} animate-pulse`} />
+                <span className={`font-fredoka font-bold text-white tracking-wide ${isCompact ? 'text-[10px]' : 'text-sm'}`}>Live Preview</span>
+              </div>
+              <div className="flex-1 relative bg-white p-4 overflow-y-auto">
+                <PreviewPanel />
+              </div>
             </div>
-            <div className="flex-1 relative bg-white p-4 overflow-y-auto">
-              <PreviewPanel />
-            </div>
+          )}
           </div>
-        </div>
 
         {/* Global Action Footer Bar */}
         <div className={`bg-white border-t-4 border-[#0F172A] flex flex-col sm:flex-row justify-between items-center shrink-0 ${isCompact ? 'p-1.5 gap-1.5' : 'p-4 gap-4'}`}>
