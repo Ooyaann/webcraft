@@ -138,7 +138,7 @@ export default function AITutorChat() {
     <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end">
       {/* Chat window */}
       {isOpen && (
-        <div className="w-80 md:w-96 h-[75vh] max-h-[500px] min-h-[350px] bg-white border-4 border-[#0F172A] rounded-2xl shadow-[6px_6px_0px_#0F172A] flex flex-col mb-4 overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="w-80 md:w-96 h-[75vh] max-h-[min(500px,calc(100vh-110px))] min-h-[240px] bg-white border-4 border-[#0F172A] rounded-2xl shadow-[6px_6px_0px_#0F172A] flex flex-col mb-4 overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Chat Header */}
           <div className="bg-[#4F46E5] text-white border-b-4 border-[#0F172A] px-4 py-3 flex justify-between items-center">
             <div className="flex items-center gap-2">

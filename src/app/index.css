@@ -766,4 +766,11 @@ h6 {
 
 @utility bg-pastel-yellow {
   background: linear-gradient(135deg, #FEF08A 0%, #FDE047 100%);
-}
+}
+/* HP landscape pendek: kecilkan skala UI proporsional (ukuran Tailwind
+   berbasis rem ikut mengecil) supaya workspace & halaman muat nyaman. */
+@media (max-height: 480px) and (orientation: landscape) {
+  html {
+    font-size: 13px;
+  }
+}

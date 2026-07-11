@@ -60,7 +60,10 @@ export default function Workspace({ isSandbox = false }) {
   const [showValidationResult, setShowValidationResult] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
+  // Layar sempit (HP landscape): preview default disembunyikan agar editor lega
+  const [showPreview, setShowPreview] = useState(
+    () => typeof window === 'undefined' || window.innerWidth >= 900,
+  );
 
   // Onboarding states
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(() => {
@@ -91,7 +94,8 @@ export default function Workspace({ isSandbox = false }) {
   // --- Pembatas panel Triple-View yang bisa diseret (resize) ---
   const [paletteWidth, setPaletteWidth] = useState(() => {
     const saved = parseInt(localStorage.getItem('webcraft_palette_w') ?? '', 10);
-    return Number.isFinite(saved) ? Math.min(480, Math.max(200, saved)) : 280;
+    if (Number.isFinite(saved)) return Math.min(480, Math.max(200, saved));
+    return window.innerWidth < 900 ? 220 : 280; // default hemat di layar sempit
   });
   const [previewWidth, setPreviewWidth] = useState(() => {
     const saved = parseInt(localStorage.getItem('webcraft_preview_w') ?? '', 10);
