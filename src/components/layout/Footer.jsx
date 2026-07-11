@@ -8,10 +8,10 @@ export default function Footer() {
 
   return (
     <footer
-      className="w-full border-t-4 border-[#0F172A] py-14 mt-auto md:-ml-32 md:w-[calc(100%+8rem)] z-10 relative"
+      className="w-full border-t-4 border-[#0F172A] py-14 mt-auto md:-ml-60 md:w-[calc(100%+18rem)] z-10 relative"
       style={{ background: 'linear-gradient(180deg, #0F172A 0%, #090D16 100%)' }}
     >
-      <div className="max-w-[1400px] mx-auto px-6 md:pl-36 md:pr-12 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+      <div className="max-w-[1400px] mx-auto px-6 md:pl-60 md:pr-12 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
         {/* Brand Column */}
         <div className="flex flex-col gap-4 text-left">
           <div className="flex items-center gap-2.5">

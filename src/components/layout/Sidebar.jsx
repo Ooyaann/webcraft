@@ -56,7 +56,6 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useStore();
-  const [expanded, setExpanded] = useState(false);
   const [isOpenMobile, setIsOpenMobile] = useState(false);
 
   const role = user?.role ?? 'guest';
@@ -94,46 +93,34 @@ export default function Sidebar() {
   const isWorkspacePage = location.pathname.startsWith('/workspace/') || location.pathname === '/sandbox';
   if (isWorkspacePage) return null;
 
+  /* ─────────── Desktop: Always-expanded static sidebar (~180px) ─────────── */
   const desktopSidebar = (
     <aside
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
-      className="fixed left-4 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center overflow-hidden"
+      className="fixed left-4 top-1/2 -translate-y-1/2 z-50 flex flex-col items-start overflow-hidden"
       style={{
-        width: expanded ? '260px' : '88px',
+        width: '240px',
         height: '90vh',
         background: activeGradient,
         border: '4px solid #0F172A',
         borderRadius: '24px',
         padding: '20px 16px',
         gap: '8px',
-        boxShadow: expanded
-          ? '8px 8px 0px #0F172A, 0 10px 30px rgba(15, 23, 42, 0.08)'
-          : '4px 4px 0px #0F172A',
-        transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-        backdropFilter: 'blur(12px)',
+        boxShadow: '4px 4px 0px #0F172A',
       }}
     >
-      {/* Brand Logo */}
+      {/* Brand Logo — always visible with text */}
       <div
-        className={`flex items-center cursor-pointer select-none pb-4 border-b-4 border-dashed w-full transition-all duration-300 ${expanded ? 'justify-start pl-2 gap-3' : 'justify-center pl-0 gap-0'
-          } ${isLightText ? 'border-white/20' : 'border-[#0F172A]/20'}`}
+        className={`flex items-center cursor-pointer select-none pb-3 border-b-4 border-dashed w-full justify-start pl-1 gap-2.5 ${isLightText ? 'border-white/20' : 'border-[#0F172A]/20'}`}
         onClick={() => handleNavigate('/')}
       >
-        <WebCraftLogo
-          className="w-10 h-10 hover:rotate-6 transition-transform duration-200"
-        />
-        {expanded && (
-          <div className="flex flex-col items-start leading-none transition-all duration-200">
-            <h1 className={`font-fredoka text-[16px] font-bold tracking-tight leading-none whitespace-nowrap ${isLightText ? 'text-white' : 'text-[#0F172A]'}`}>
-              WebCraft
-            </h1>
-          </div>
-        )}
+        <WebCraftLogo className="w-8 h-8 shrink-0" />
+        <h1 className={`font-fredoka text-[14px] font-bold tracking-tight leading-none whitespace-nowrap ${isLightText ? 'text-white' : 'text-[#0F172A]'}`}>
+          WebCraft
+        </h1>
       </div>
 
-      {/* Navigation list */}
-      <nav className="flex-grow flex flex-col gap-2.5 w-full pt-4 overflow-y-auto overflow-x-hidden">
+      {/* Navigation list — labels always visible */}
+      <nav className="flex-grow flex flex-col gap-2 w-full pt-3 overflow-y-auto overflow-x-hidden">
         {items.map((item) => {
           const isActive =
             item.to === '/'
@@ -144,123 +131,78 @@ export default function Sidebar() {
               key={item.to}
               to={item.to}
               title={null}
-              className={`group relative flex items-center rounded-xl font-nunito font-black text-[11px] transition-all duration-200 ${expanded
-                ? 'w-[calc(100%-4px)] mx-[2px] justify-start py-2.5 px-3.5 gap-3'
-                : 'w-11 h-11 justify-center p-0 gap-0 mx-auto'
-                } ${isActive
-                  ? `${activeStyle.text} border-2 border-[#0F172A] shadow-[2.5px_2.5px_0px_#0F172A] -translate-y-[1px]`
+              className={`flex items-center rounded-xl font-nunito font-black text-[11px] w-full justify-start py-2 px-3 gap-2.5 ${isActive
+                  ? `${activeStyle.text} border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]`
                   : isLightText
-                    ? 'hover:bg-white/10 text-white/80 hover:text-white'
-                    : 'hover:bg-black/5 text-[#0F172A]/70 hover:text-[#0F172A]'
+                    ? 'text-white/80 hover:bg-white/10 hover:text-white'
+                    : 'text-[#0F172A]/70 hover:bg-black/5 hover:text-[#0F172A]'
                 }`}
               style={
                 isActive
-                  ? {
-                    background: activeStyle.bg,
-                  }
+                  ? { background: activeStyle.bg }
                   : {}
               }
             >
-              <div className="relative shrink-0 flex items-center justify-center w-6">
+              <div className="shrink-0 flex items-center justify-center w-5">
                 <i
-                  className={`ti ${item.icon} text-[18px]`}
+                  className={`ti ${item.icon} text-[16px]`}
                   aria-hidden
                 />
-                {/* Active dot indicator when collapsed */}
-                {isActive && !expanded && (
-                  <span
-                    className="absolute -right-1.5 -top-1 w-2.5 h-2.5 rounded-full border border-white"
-                    style={{
-                      background: role === 'guest' ? '#3B82F6' : '#FACC15',
-                      boxShadow: '0 0 6px rgba(250, 204, 21, 0.8)',
-                    }}
-                  />
-                )}
               </div>
-
-              {expanded && (
-                <span className="font-nunito font-black text-[11.5px] text-left uppercase tracking-wider">
-                  {item.label}
-                </span>
-              )}
-
-              {/* Tooltip when collapsed */}
-              {!expanded && (
-                <div className="absolute left-full ml-4 px-2.5 py-1.5 bg-white text-[#0F172A] text-[10px] font-fredoka font-bold rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-150 whitespace-nowrap z-[999] translate-x-2 group-hover:translate-x-0">
-                  {item.label}
-                  <div className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-2 h-2 bg-white border-l-2 border-b-2 border-[#0F172A] rotate-45" />
-                </div>
-              )}
+              <span className="font-nunito font-black text-[10.5px] text-left uppercase tracking-wider leading-tight">
+                {item.label}
+              </span>
             </NavLink>
           );
         })}
       </nav>
 
-      {/* User profile / Logout */}
-      <div className={`border-t-4 border-dashed pt-4 w-full flex flex-col gap-2 ${isLightText ? 'border-white/20' : 'border-[#0F172A]/20'}`}>
+      {/* User profile / Logout — always visible */}
+      <div className={`border-t-4 border-dashed pt-3 w-full flex flex-col gap-2 ${isLightText ? 'border-white/20' : 'border-[#0F172A]/20'}`}>
         {user ? (
           <div
-            className={`flex flex-col gap-2 rounded-xl overflow-hidden border-2 border-[#0F172A] shadow-[2.5px_2.5px_0px_#0F172A] transition-all duration-300 ${expanded ? 'w-[calc(100%-4px)] mx-[2px] p-2' : 'w-12 h-12 justify-center p-0 mx-auto'
-              } ${profileBg}`}
+            className={`flex flex-col gap-2 rounded-xl overflow-hidden border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] w-full p-2 ${profileBg}`}
           >
-            <div className={`flex items-center w-full transition-all duration-300 ${expanded ? 'justify-start gap-2' : 'justify-center gap-0'
-              }`}>
+            <div className="flex items-center w-full justify-start gap-2">
               <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full font-fredoka font-bold text-sm shrink-0 border-2 border-[#0F172A] text-white shadow-[1.5px_1.5px_0px_#0F172A] ${
+                className={`flex items-center justify-center w-7 h-7 rounded-full font-fredoka font-bold text-xs shrink-0 border-2 border-[#0F172A] text-white shadow-[1px_1px_0px_#0F172A] ${
                   role === 'siswa' ? 'bg-[#6366F1]' : 'bg-[#EC4899]'
                 }`}
               >
                 {user.name?.charAt(0).toUpperCase()}
               </div>
-              {expanded && (
-                <div className="text-left flex-1 min-w-0 transition-all duration-200">
-                  <p className="font-nunito text-[11px] font-black leading-none text-[#0F172A] truncate">
-                    {user.name}
-                  </p>
-                </div>
-              )}
+              <div className="text-left flex-1 min-w-0">
+                <p className="font-nunito text-[10px] font-black leading-none text-[#0F172A] truncate">
+                  {user.name}
+                </p>
+              </div>
             </div>
-            {expanded && (
-              <button
-                onClick={handleLogout}
-                className="w-full py-1.5 border-2 border-[#0F172A] bg-[#F43F5E] hover:bg-[#E11D48] text-white font-nunito text-[10px] font-black cursor-pointer shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-1"
-              >
-                <i className="ti ti-logout text-xs" />
-                Keluar
-              </button>
-            )}
+            <button
+              onClick={handleLogout}
+              className="w-full py-1.5 border-2 border-[#0F172A] bg-[#F43F5E] hover:bg-[#E11D48] text-white font-nunito text-[9px] font-black cursor-pointer shadow-[1px_1px_0px_#0F172A] active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-1 rounded-lg"
+            >
+              <i className="ti ti-logout text-[10px]" />
+              Keluar
+            </button>
           </div>
         ) : (
-          <div className="w-full flex justify-center">
-            {expanded ? (
-              <button
-                onClick={() => handleNavigate('/login')}
-                className="w-[calc(100%-4px)] mx-[2px] py-2.5 text-[#0F172A] border-2 border-[#0F172A] font-fredoka font-bold text-xs rounded-xl hover:-translate-y-0.5 active:translate-y-[0.5px] cursor-pointer flex justify-center items-center gap-1.5 transition-all"
-                style={{
-                  background: 'linear-gradient(135deg, #FACC15, #FDE68A)',
-                  boxShadow: '2px 2px 0px #0F172A',
-                }}
-              >
-                <i className="ti ti-login text-sm" />
-                Login
-              </button>
-            ) : (
-              <button
-                onClick={() => handleNavigate('/login')}
-                className="w-12 h-12 text-[#0F172A] border-2 border-[#0F172A] rounded-xl hover:-translate-y-0.5 active:translate-y-[0.5px] cursor-pointer flex justify-center items-center transition-all shadow-[2px_2px_0px_#0F172A] mx-auto"
-                style={{
-                  background: 'linear-gradient(135deg, #FACC15, #FDE68A)',
-                }}
-              >
-                <i className="ti ti-login text-base" />
-              </button>
-            )}
-          </div>
+          <button
+            onClick={() => handleNavigate('/login')}
+            className="w-full py-2 text-[#0F172A] border-2 border-[#0F172A] font-fredoka font-bold text-[11px] rounded-xl cursor-pointer flex justify-center items-center gap-1.5 active:translate-y-[0.5px] transition-all"
+            style={{
+              background: 'linear-gradient(135deg, #FACC15, #FDE68A)',
+              boxShadow: '2px 2px 0px #0F172A',
+            }}
+          >
+            <i className="ti ti-login text-sm" />
+            Login
+          </button>
         )}
       </div>
     </aside>
   );
 
+  /* ─────────── Mobile: Header + Drawer (unchanged) ─────────── */
   const mobileHeader = (
     <header 
       className={`md:hidden w-full border-b-4 border-[#0F172A] px-4 py-3 flex justify-between items-center z-45 sticky top-0`}
