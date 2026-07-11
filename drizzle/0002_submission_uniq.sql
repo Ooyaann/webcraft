@@ -1,0 +1,2 @@
+ALTER TABLE "learning_submissions" ADD CONSTRAINT "learning_subs_task_siswa_uniq" UNIQUE("task_id","siswa_id");--> statement-breakpoint
+ALTER TABLE "project_submissions" ADD CONSTRAINT "project_subs_task_siswa_uniq" UNIQUE("task_id","siswa_id");

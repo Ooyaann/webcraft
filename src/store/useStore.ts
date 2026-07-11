@@ -56,9 +56,13 @@ type WebcraftState = {
   // === SESSION STATE ===
   user: SessionUser;
   activeRoom: Record<string, unknown> | null;
+  // true setelah AppShell selesai probe /auth/me (cookie) — dipakai guard
+  // untuk membedakan "belum dicek" dari "benar-benar tamu".
+  authChecked: boolean;
 
   // === ACTIONS ===
   setUser: (user: SessionUser) => void;
+  setAuthChecked: (v: boolean) => void;
   setActiveRoom: (room: Record<string, unknown> | null) => void;
   setActiveLevel: (
     levelId: string | null,
@@ -241,9 +245,11 @@ export const useStore = create<WebcraftState>()(
       // === SESSION STATE ===
       user: null, // {id, name, role: 'siswa'|'guru', email}
       activeRoom: null, // {id, name, code}
+      authChecked: false,
 
       // === ACTIONS ===
       setUser: (user) => set({ user }),
+      setAuthChecked: (v) => set({ authChecked: v }),
       setActiveRoom: (room) => set({ activeRoom: room }),
       setActiveLevel: (levelId, config) => set({ activeLevel: levelId, activeLevelConfig: config }),
       logout: () => set({

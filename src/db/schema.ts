@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 
 // Port 1:1 dari backend/app/models.py.
@@ -157,7 +158,10 @@ export const learningSubmissions = pgTable("learning_submissions", {
   // Penanda pengerjaan ulang (remidi): skor dibatasi maksimal KKM.
   is_remedial: boolean().notNull().default(false),
   submitted_at: ts().defaultNow().notNull(),
-});
+}, (t) => [
+  // Satu submission per (task, siswa) — jadikan upsert race-safe di DB.
+  unique("learning_subs_task_siswa_uniq").on(t.task_id, t.siswa_id),
+]);
 
 export const projectSubmissions = pgTable("project_submissions", {
   id: text().primaryKey(),
@@ -178,7 +182,9 @@ export const projectSubmissions = pgTable("project_submissions", {
   is_published_to_gallery: boolean().notNull().default(false),
   submitted_at: ts().defaultNow().notNull(),
   graded_at: ts(),
-});
+}, (t) => [
+  unique("project_subs_task_siswa_uniq").on(t.task_id, t.siswa_id),
+]);
 
 export const ctScores = pgTable("ct_scores", {
   id: text().primaryKey(),

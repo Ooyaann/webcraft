@@ -372,9 +372,8 @@ export default function Workspace({ isSandbox = false }) {
 
       setFinalReport(result);
 
-      // Save submission to database if logged in
-      const token = localStorage.getItem('webcraft_token');
-      if (token) {
+      // Save submission to database if logged in (auth via cookie httpOnly)
+      if (user) {
         try {
           if (activeLevelConfig?.type === 'project') {
             await api.post('/submissions/project', {

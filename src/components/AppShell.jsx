@@ -13,7 +13,7 @@ import BackgroundCodingShapes from './common/BackgroundCodingShapes';
 import WebCraftLogo from './common/WebCraftLogo';
 
 export default function AppShell({ children }) {
-  const { setUser, setActiveRoom } = useStore();
+  const { setUser, setActiveRoom, setAuthChecked } = useStore();
   const pathname = usePathname();
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
@@ -46,43 +46,36 @@ export default function AppShell({ children }) {
   }, [pathname]);
 
   useEffect(() => {
-    // Restore session on refresh
-    const token = localStorage.getItem('webcraft_token');
-    if (token) {
-      api.get('/auth/me')
-        .then(response => {
-          const userData = response.data;
-          setUser({
-            id: userData.id,
-            name: userData.name,
-            role: userData.role,
-            email: userData.email
-          });
-          // Restore default class for student to prevent empty room list on refresh
-          if (userData.role === 'siswa') {
-            api.get('/rooms')
-              .then(res => {
-                const list = res.data || [];
-                if (list.length > 0) {
-                  setActiveRoom(list[0]);
-                } else {
-                  setActiveRoom(null);
-                }
-              })
-              .catch(() => setActiveRoom(null));
-          } else {
-            setActiveRoom(null);
-          }
-        })
-        .catch(err => {
-          console.error("Token invalid, removing...", err);
-          localStorage.removeItem('webcraft_token');
-          localStorage.removeItem('webcraft_refresh');
-          setUser(null);
-          setActiveRoom(null);
+    // Pulihkan sesi via cookie httpOnly: coba /auth/me (cookie dikirim otomatis).
+    // authChecked menandai probe selesai supaya guard tahu ini tamu asli.
+    api.get('/auth/me')
+      .then(response => {
+        const userData = response.data;
+        setUser({
+          id: userData.id,
+          name: userData.name,
+          role: userData.role,
+          email: userData.email
         });
-    }
-  }, [setUser, setActiveRoom]);
+        // Restore default class for student to prevent empty room list on refresh
+        if (userData.role === 'siswa') {
+          api.get('/rooms')
+            .then(res => {
+              const list = res.data || [];
+              setActiveRoom(list.length > 0 ? list[0] : null);
+            })
+            .catch(() => setActiveRoom(null));
+        } else {
+          setActiveRoom(null);
+        }
+      })
+      .catch(() => {
+        // Belum login / cookie kedaluwarsa — tamu.
+        setUser(null);
+        setActiveRoom(null);
+      })
+      .finally(() => setAuthChecked(true));
+  }, [setUser, setActiveRoom, setAuthChecked]);
 
   if (!mounted) return null;
 

@@ -26,17 +26,14 @@ export default function Login() {
         password
       });
 
-      const { access_token, refresh_token, user: userData } = response.data;
+      const { user: userData } = response.data;
 
       // Prevent role mismatch
       if (userData.role !== role) {
         throw new Error(`Akun Anda terdaftar sebagai ${userData.role === 'guru' ? 'Guru' : 'Siswa'}. Pastikan Anda memilih Peran yang sesuai di atas.`);
       }
 
-      localStorage.setItem('webcraft_token', access_token);
-      if (refresh_token) {
-        localStorage.setItem('webcraft_refresh', refresh_token);
-      }
+      // Token di-set server sebagai cookie httpOnly — tak perlu simpan di JS.
 
       // Clean workspace to prevent state leakage
       resetWorkspace();

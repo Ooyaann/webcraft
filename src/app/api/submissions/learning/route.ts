@@ -121,22 +121,22 @@ export const POST = handler(async (req) => {
     is_remedial: isRemedial,
   };
 
-  let subId: string;
-  if (existing) {
-    await db
-      .update(learningSubmissions)
-      .set(values)
-      .where(eq(learningSubmissions.id, existing.id));
-    subId = existing.id;
-  } else {
-    subId = randomUUID();
-    await db.insert(learningSubmissions).values({
-      id: subId,
+  // Upsert atomik via unique (task_id, siswa_id) — race-safe (dua submit
+  // bersamaan tidak lagi bisa membuat baris ganda).
+  const [row] = await db
+    .insert(learningSubmissions)
+    .values({
+      id: existing?.id ?? randomUUID(),
       task_id: body.task_id,
       siswa_id: user.id,
       ...values,
-    });
-  }
+    })
+    .onConflictDoUpdate({
+      target: [learningSubmissions.task_id, learningSubmissions.siswa_id],
+      set: values,
+    })
+    .returning({ id: learningSubmissions.id });
+  const subId = row.id;
 
   return NextResponse.json(
     {

@@ -6,6 +6,8 @@ import { refreshTokens, users } from "@/db/schema";
 import {
   createAccessToken,
   createRefreshToken,
+  exposeTokensInBody,
+  setAuthCookies,
   toUserResponse,
   verifyPassword,
 } from "@/lib/auth";
@@ -48,10 +50,13 @@ export const POST = handler(async (req) => {
       ),
     );
 
-  return NextResponse.json({
-    access_token: accessToken,
+  const res = NextResponse.json({
     token_type: "bearer",
     user: toUserResponse(user),
-    refresh_token: refreshToken,
+    ...(exposeTokensInBody
+      ? { access_token: accessToken, refresh_token: refreshToken }
+      : {}),
   });
+  setAuthCookies(res, accessToken, refreshToken);
+  return res;
 });

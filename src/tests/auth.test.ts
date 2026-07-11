@@ -117,6 +117,43 @@ describe("auth", () => {
     expect(refreshToken).toBeTruthy();
   });
 
+  it("login men-set cookie httpOnly; auth & refresh jalan lewat cookie", async () => {
+    const { POST } = await import("@/app/api/auth/login/route");
+    const res = await POST(
+      postJson("/api/auth/login", { email: siswa.email, password: siswa.password }),
+      {},
+    );
+    expect(res.status).toBe(200);
+    const cookieAccess = res.cookies.get("wc_access")?.value;
+    const cookieRefresh = res.cookies.get("wc_refresh")?.value;
+    expect(cookieAccess).toBeTruthy();
+    expect(cookieRefresh).toBeTruthy();
+
+    // /me terotentikasi lewat Cookie (bukan Bearer)
+    const { GET } = await import("@/app/api/auth/me/route");
+    const meRes = await GET(
+      new Request(url("/api/auth/me"), {
+        headers: { cookie: `wc_access=${cookieAccess}` },
+      }),
+      {},
+    );
+    expect(meRes.status).toBe(200);
+    expect((await meRes.json()).email).toBe(siswa.email);
+
+    // Refresh via cookie tanpa body → set cookie access baru
+    const { POST: refreshRoute } = await import("@/app/api/auth/refresh/route");
+    const rRes = await refreshRoute(
+      new Request(url("/api/auth/refresh"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: `wc_refresh=${cookieRefresh}` },
+        body: "{}",
+      }),
+      {},
+    );
+    expect(rRes.status).toBe(200);
+    expect(rRes.cookies.get("wc_access")?.value).toBeTruthy();
+  });
+
   it("GET /me dengan token → profil; tanpa token → 401", async () => {
     const { GET } = await import("@/app/api/auth/me/route");
     const ok = await GET(

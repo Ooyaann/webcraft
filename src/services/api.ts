@@ -4,50 +4,41 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 
-// Klien API (dari api.js, kini TypeScript).
-// Backend satu origin dengan UI (Next.js route handlers) — tanpa env var.
+// Klien API. Otentikasi lewat cookie httpOnly (di-set server) — token tidak
+// pernah disentuh JS, jadi aman dari pencurian XSS. withCredentials wajib
+// agar cookie ikut terkirim (same-origin).
 const API_URL = '/api';
-
-const TOKEN_KEY = 'webcraft_token';
-const REFRESH_KEY = 'webcraft_refresh';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Attach the access token to every request if present.
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
-
-// --- Automatic access-token refresh on 401 ---------------------------------
+// --- Refresh otomatis saat 401 (cookie-based) ------------------------------
 type QueueEntry = {
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (err: unknown) => void;
 };
 
 let isRefreshing = false;
 let pendingQueue: QueueEntry[] = [];
 
-const flushQueue = (error: unknown, token: string | null = null) => {
+const flushQueue = (error: unknown) => {
   pendingQueue.forEach(({ resolve, reject }) =>
-    error ? reject(error) : resolve(token as string),
+    error ? reject(error) : resolve(),
   );
   pendingQueue = [];
 };
 
 const forceLogout = () => {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(REFRESH_KEY);
+  // Bersihkan sisa penanda lama (token tidak lagi disimpan di sini).
+  try {
+    localStorage.removeItem('webcraft_token');
+    localStorage.removeItem('webcraft_refresh');
+  } catch { /* SSR / storage tak tersedia */ }
   if (window.location.pathname !== '/login') {
     window.location.href = '/login';
   }
@@ -87,36 +78,23 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const refreshToken = localStorage.getItem(REFRESH_KEY);
-    if (!refreshToken) {
-      forceLogout();
-      return Promise.reject(error);
-    }
-
-    // A refresh is already in flight — queue this request until it resolves.
+    // Sebuah refresh sedang berjalan — antre sampai selesai lalu ulangi.
     if (isRefreshing) {
-      return new Promise<string>((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         pendingQueue.push({ resolve, reject });
-      }).then((token) => {
-        original.headers.Authorization = `Bearer ${token}`;
-        return api(original);
-      });
+      }).then(() => api(original));
     }
 
     original._retry = true;
     isRefreshing = true;
 
     try {
-      // Use a bare axios call so this request skips the interceptor.
-      const resp = await axios.post(`${API_URL}/auth/refresh`, { refresh_token: refreshToken });
-      const { access_token, refresh_token } = resp.data;
-      localStorage.setItem(TOKEN_KEY, access_token);
-      localStorage.setItem(REFRESH_KEY, refresh_token);
-      flushQueue(null, access_token);
-      original.headers.Authorization = `Bearer ${access_token}`;
+      // Cookie refresh dikirim otomatis; server memutar & men-set cookie baru.
+      await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
+      flushQueue(null);
       return api(original);
     } catch (refreshError) {
-      flushQueue(refreshError, null);
+      flushQueue(refreshError);
       forceLogout();
       return Promise.reject(refreshError);
     } finally {

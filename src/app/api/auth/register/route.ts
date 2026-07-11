@@ -7,7 +7,9 @@ import { users } from "@/db/schema";
 import {
   createAccessToken,
   createRefreshToken,
+  exposeTokensInBody,
   hashPassword,
+  setAuthCookies,
   toUserResponse,
 } from "@/lib/auth";
 import { handler, HttpError, parseBody } from "@/lib/http";
@@ -57,10 +59,15 @@ export const POST = handler(async (req) => {
     })
     .returning();
 
-  return NextResponse.json({
-    access_token: await createAccessToken(user),
+  const accessToken = await createAccessToken(user);
+  const refreshToken = await createRefreshToken(user.id);
+  const res = NextResponse.json({
     token_type: "bearer",
     user: toUserResponse(user),
-    refresh_token: await createRefreshToken(user.id),
+    ...(exposeTokensInBody
+      ? { access_token: accessToken, refresh_token: refreshToken }
+      : {}),
   });
+  setAuthCookies(res, accessToken, refreshToken);
+  return res;
 });

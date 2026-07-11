@@ -1,5 +1,7 @@
 'use client';
-// Port guard autentikasi dari frontend/src/App.jsx.
+// Guard autentikasi. Token ada di cookie httpOnly (tak terbaca JS), jadi
+// status login ditentukan oleh store.user + authChecked (diisi AppShell
+// setelah probe /auth/me). Sebelum probe selesai → tampilkan spinner.
 import { useStore } from '../store/useStore';
 import { Navigate } from '../lib/router-compat';
 
@@ -15,28 +17,17 @@ function SessionSpinner() {
 }
 
 export function RequireAuth({ children }) {
-  const { user } = useStore();
-  const token = localStorage.getItem('webcraft_token');
-  if (!user && !token) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!user) {
-    return <SessionSpinner />;
-  }
-  return children;
+  const { user, authChecked } = useStore();
+  if (user) return children;
+  if (!authChecked) return <SessionSpinner />;
+  return <Navigate to="/login" replace />;
 }
 
 export function RequireRole({ role, children }) {
-  const { user } = useStore();
-  const token = localStorage.getItem('webcraft_token');
-  if (!user && !token) {
-    return <Navigate to="/login" replace />;
+  const { user, authChecked } = useStore();
+  if (user) {
+    return user.role === role ? children : <Navigate to="/" replace />;
   }
-  if (!user) {
-    return <SessionSpinner />;
-  }
-  if (user.role !== role) {
-    return <Navigate to="/" replace />;
-  }
-  return children;
+  if (!authChecked) return <SessionSpinner />;
+  return <Navigate to="/login" replace />;
 }

@@ -5,7 +5,7 @@ import { aiService } from '../../services/aiService';
 import api from '../../services/api';
 
 export default function CTJourneyModal({ isOpen, onClose, viewOnly = false }) {
-  const { ctJourneyAnswers, setCtJourneyAnswers, setCtPreScore, activeLevelConfig, ctPreScore } = useStore();
+  const { ctJourneyAnswers, setCtJourneyAnswers, setCtPreScore, activeLevelConfig, ctPreScore, user } = useStore();
   const [currentStep, setCurrentStep] = useState(1); // 1: Decomposition, 2: Abstraction, 3: Pattern, 4: Algorithm, 5: Summary
   const [sessionId, setSessionId] = useState(null);
   const [showLockConfirm, setShowLockConfirm] = useState(false);
@@ -281,9 +281,8 @@ export default function CTJourneyModal({ isOpen, onClose, viewOnly = false }) {
         if (currentStep === 4) answerData = steps;
         setCtJourneyAnswers(stepName, answerData);
 
-        // Persist CT step to database if authenticated
-        const token = localStorage.getItem('webcraft_token');
-        if (token) {
+        // Persist CT step to database if authenticated (cookie httpOnly)
+        if (user) {
           try {
             const saveRes = await api.post('/ct-journey/session', {
               session_id: sessionId,
@@ -405,9 +404,8 @@ export default function CTJourneyModal({ isOpen, onClose, viewOnly = false }) {
         [stepName]: prev[stepName] || localScore
       }));
 
-      // Background database sync
-      const token = localStorage.getItem('webcraft_token');
-      if (token) {
+      // Background database sync (auth via cookie httpOnly)
+      if (user) {
         api.post('/ct-journey/session', {
           session_id: sessionId,
           task_id: activeLevelConfig?.id || 'easy-1',

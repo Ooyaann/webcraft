@@ -68,17 +68,12 @@ export default function Sidebar() {
   const isLightText = role === 'siswa' || role === 'guru';
 
   const handleLogout = async () => {
-    const refreshToken = localStorage.getItem('webcraft_refresh');
-    if (refreshToken) {
-      // Best-effort server-side revoke; ignore failures so logout always proceeds.
-      try {
-        await api.post('/auth/logout', { refresh_token: refreshToken });
-      } catch (e) {
-        // no-op
-      }
+    // Cookie refresh dikirim otomatis; server mencabut token & menghapus cookie.
+    try {
+      await api.post('/auth/logout', {});
+    } catch {
+      // Abaikan kegagalan agar logout tetap berjalan.
     }
-    localStorage.removeItem('webcraft_token');
-    localStorage.removeItem('webcraft_refresh');
     logout();
     navigate('/');
     setIsOpenMobile(false);

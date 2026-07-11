@@ -3,22 +3,33 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { refreshTokens, users } from "@/db/schema";
-import { createAccessToken, createRefreshToken, hashToken } from "@/lib/auth";
+import {
+  createAccessToken,
+  createRefreshToken,
+  exposeTokensInBody,
+  hashToken,
+  readCookie,
+  REFRESH_COOKIE,
+  setAuthCookies,
+} from "@/lib/auth";
 import { handler, HttpError, parseBody } from "@/lib/http";
 
-const refreshSchema = z.object({ refresh_token: z.string() });
+const refreshSchema = z.object({ refresh_token: z.string().optional() });
 
 const invalid = () =>
   new HttpError(401, "Refresh token tidak sah atau kedaluwarsa.");
 
 export const POST = handler(async (req) => {
+  // Cookie (browser) diutamakan; body sbg fallback (test / Bearer client).
   const body = await parseBody(req, refreshSchema);
+  const rawToken = readCookie(req, REFRESH_COOKIE) ?? body.refresh_token;
+  if (!rawToken) throw invalid();
   const db = getDb();
 
   const [stored] = await db
     .select()
     .from(refreshTokens)
-    .where(eq(refreshTokens.token_hash, hashToken(body.refresh_token)))
+    .where(eq(refreshTokens.token_hash, hashToken(rawToken)))
     .limit(1);
   if (!stored || stored.revoked || stored.expires_at < new Date()) {
     throw invalid();
@@ -37,9 +48,14 @@ export const POST = handler(async (req) => {
     .set({ revoked: true })
     .where(eq(refreshTokens.id, stored.id));
 
-  return NextResponse.json({
-    access_token: await createAccessToken(user),
+  const accessToken = await createAccessToken(user);
+  const refreshToken = await createRefreshToken(user.id);
+  const res = NextResponse.json({
     token_type: "bearer",
-    refresh_token: await createRefreshToken(user.id),
+    ...(exposeTokensInBody
+      ? { access_token: accessToken, refresh_token: refreshToken }
+      : {}),
   });
+  setAuthCookies(res, accessToken, refreshToken);
+  return res;
 });

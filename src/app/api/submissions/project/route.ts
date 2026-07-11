@@ -74,40 +74,27 @@ export const POST = handler(async (req) => {
     };
   }
 
-  const [existing] = await db
-    .select({ id: projectSubmissions.id })
-    .from(projectSubmissions)
-    .where(
-      and(
-        eq(projectSubmissions.task_id, body.task_id),
-        eq(projectSubmissions.siswa_id, user.id),
-      ),
-    )
-    .limit(1);
-
-  let subId: string;
-  if (existing) {
-    await db
-      .update(projectSubmissions)
-      .set({
-        final_ast_json: body.final_ast,
-        ct_session_id: body.ct_session_id ?? null,
-        ai_suggestion_json: aiSuggestion,
-      })
-      .where(eq(projectSubmissions.id, existing.id));
-    subId = existing.id;
-  } else {
-    subId = randomUUID();
-    await db.insert(projectSubmissions).values({
-      id: subId,
+  // Upsert atomik via unique (task_id, siswa_id) — race-safe.
+  const updateSet = {
+    final_ast_json: body.final_ast,
+    ct_session_id: body.ct_session_id ?? null,
+    ai_suggestion_json: aiSuggestion,
+  };
+  const [row] = await db
+    .insert(projectSubmissions)
+    .values({
+      id: randomUUID(),
       task_id: body.task_id,
       siswa_id: user.id,
-      final_ast_json: body.final_ast,
-      ct_session_id: body.ct_session_id ?? null,
-      ai_suggestion_json: aiSuggestion,
       is_published_to_gallery: false,
-    });
-  }
+      ...updateSet,
+    })
+    .onConflictDoUpdate({
+      target: [projectSubmissions.task_id, projectSubmissions.siswa_id],
+      set: updateSet,
+    })
+    .returning({ id: projectSubmissions.id });
+  const subId = row.id;
 
   return NextResponse.json(
     {

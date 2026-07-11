@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { SignJWT, jwtVerify } from "jose";
+import type { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { refreshTokens, users } from "@/db/schema";
 import { HttpError } from "@/lib/http";
@@ -55,13 +56,66 @@ export async function createRefreshToken(userId: string): Promise<string> {
   return raw;
 }
 
+// ---------- Cookie httpOnly (browser) ----------
+// Token disimpan di cookie httpOnly, tidak bisa dibaca JS → aman dari XSS.
+export const ACCESS_COOKIE = "wc_access";
+export const REFRESH_COOKIE = "wc_refresh";
+
+export function readCookie(req: Request, name: string): string | null {
+  const cookie = req.headers.get("cookie");
+  if (!cookie) return null;
+  for (const part of cookie.split(";")) {
+    const idx = part.indexOf("=");
+    if (idx === -1) continue;
+    if (part.slice(0, idx).trim() === name) {
+      return decodeURIComponent(part.slice(idx + 1).trim());
+    }
+  }
+  return null;
+}
+
+export function setAuthCookies(
+  res: NextResponse,
+  access: string,
+  refresh: string,
+): void {
+  const secure = process.env.NODE_ENV === "production";
+  res.cookies.set(ACCESS_COOKIE, access, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: ACCESS_MINUTES() * 60,
+  });
+  res.cookies.set(REFRESH_COOKIE, refresh, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: REFRESH_DAYS() * 86_400,
+  });
+}
+
+export function clearAuthCookies(res: NextResponse): void {
+  res.cookies.set(ACCESS_COOKIE, "", { path: "/", maxAge: 0 });
+  res.cookies.set(REFRESH_COOKIE, "", { path: "/", maxAge: 0 });
+}
+
+// Tokens hanya disertakan di body untuk lingkungan non-produksi (dipakai test
+// & Bearer fallback). Di produksi otentikasi murni lewat cookie httpOnly.
+export const exposeTokensInBody = process.env.NODE_ENV !== "production";
+
 // ---------- Current user ----------
 export async function getCurrentUserOptional(
   req: Request,
 ): Promise<AuthUser | null> {
-  const header = req.headers.get("authorization") ?? "";
-  if (!header.toLowerCase().startsWith("bearer ")) return null;
-  const token = header.slice(7).trim();
+  // Cookie (browser) diutamakan; header Bearer sbg fallback (test / API klien).
+  let token = readCookie(req, ACCESS_COOKIE);
+  if (!token) {
+    const header = req.headers.get("authorization") ?? "";
+    if (!header.toLowerCase().startsWith("bearer ")) return null;
+    token = header.slice(7).trim();
+  }
   try {
     const { payload } = await jwtVerify(token, jwtSecret(), {
       algorithms: ["HS256"],
