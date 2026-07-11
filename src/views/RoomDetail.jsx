@@ -32,18 +32,18 @@ export default function RoomDetail() {
 
   // Form states
   const [announcementText, setAnnouncementText] = useState('');
-  
+
   // Meeting form fields
   const [editingPert, setEditingPert] = useState(null);
   const [judul, setJudul] = useState('');
   const [urutan, setUrutan] = useState(1);
   const [isPublished, setIsPublished] = useState(true);
-  
+
   // CBL Engage fields
   const [bigIdea, setBigIdea] = useState('Coding & Web');
   const [essentialQuestion, setEssentialQuestion] = useState('');
   const [challenge, setChallenge] = useState('');
-  
+
   // Guiding & Reflection Lists
   const [guidingQuestions, setGuidingQuestions] = useState([]);
   const [newGuiding, setNewGuiding] = useState('');
@@ -198,12 +198,12 @@ export default function RoomDetail() {
     setJudul(pert.judul);
     setUrutan(pert.urutan);
     setIsPublished(pert.is_published);
-    
+
     const cbl = pert.cbl_engage_json || {};
     setBigIdea(cbl.big_idea || 'Coding & Desain Web');
     setEssentialQuestion(cbl.essential_question || '');
     setChallenge(cbl.challenge || '');
-    
+
     setGuidingQuestions(pert.guiding_questions_json || []);
     setReflectionQuestions(pert.reflection_questions_json || []);
     setMateriList(pert.materi_list_json || []);
@@ -363,12 +363,12 @@ export default function RoomDetail() {
             {roomName}
           </h2>
           <p className="font-nunito text-xs text-blue-100 font-bold mt-1">
-            {isTeacher 
+            {isTeacher
               ? 'Aturlah alur pembelajaran modul coding web, kelola berkas bahan ajar, serta terbitkan pengumuman.'
               : 'Selesaikan modul pembelajaran coding web dan pemrograman secara berurutan.'}
           </p>
         </div>
-        
+
         <div className="flex gap-3 items-center shrink-0">
           {isTeacher && (
             <button
@@ -379,7 +379,7 @@ export default function RoomDetail() {
               Kelola Pengumuman
             </button>
           )}
-          
+
           <div className="bg-white border-2 border-[#0F172A] px-4 py-2 rounded-xl text-center shadow-[3px_3px_0px_#0F172A] shrink-0">
             <span className="font-nunito text-[9px] font-black text-slate-400 uppercase tracking-widest block">Kode Kelas</span>
             <span className="font-fredoka text-base font-bold text-blue-600 tracking-wider uppercase">{roomCode}</span>
@@ -408,7 +408,7 @@ export default function RoomDetail() {
             <i className="ti ti-clipboard-list text-blue-600 animate-pulse" />
             Alur Pembelajaran Kelas
           </h3>
-          
+
           {isTeacher && (
             <button
               onClick={handleOpenAddModal}
@@ -430,7 +430,7 @@ export default function RoomDetail() {
             <i className="ti ti-calendar-event text-4xl text-slate-400 mb-2" />
             <h4 className="font-fredoka text-base font-bold text-slate-800">Materi Belum Tersedia</h4>
             <p className="font-nunito text-xs text-slate-500 font-bold">
-              {isTeacher 
+              {isTeacher
                 ? 'Belum ada pertemuan terdaftar. Klik "Tambah Pertemuan" di atas untuk mulai membuat kurikulum kelas!'
                 : 'Guru belum menerbitkan materi atau tugas untuk kelas ini. Silakan hubungi Guru Anda!'}
             </p>
@@ -443,7 +443,7 @@ export default function RoomDetail() {
               const isFirst = index === 0;
               const prevPert = index > 0 ? pertemuanList[index - 1] : null;
               const isPrevCompleted = prevPert ? completedTaskIds.has(prevPert.id) : false;
-              
+
               // Teachers see everything unlocked, students follow chronological unlock
               const isUnlocked = isTeacher || isFirst || isPrevCompleted || isCompleted;
 
@@ -503,12 +503,11 @@ export default function RoomDetail() {
                     )}
                   </span>
 
-                  <div 
-                    className={`neo-card p-4.5 ${cardBg} ${borderClass} shadow-[4px_4px_0px_#0F172A] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${
-                      isUnlocked 
-                        ? 'hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#0F172A] cursor-pointer' 
+                  <div
+                    className={`neo-card p-4.5 ${cardBg} ${borderClass} shadow-[4px_4px_0px_#0F172A] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all ${isUnlocked
+                        ? 'hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#0F172A] cursor-pointer'
                         : 'opacity-65 cursor-not-allowed shadow-[2px_2px_0px_#0F172A]'
-                    }`}
+                      }`}
                     onClick={() => {
                       if (isTeacher) {
                         navigate(`/ruang-belajar/${roomId}/tugas/${pert.id}`);
@@ -526,32 +525,31 @@ export default function RoomDetail() {
                           {isCompleted && isRemedial
                             ? `Belum Tuntas (KKM ${KKM}) · Remidi`
                             : isCompleted
-                            ? 'Selesai'
-                            : !pert.is_published
-                            ? 'Draft (Disembunyikan)'
-                            : isUnlocked
-                            ? 'Siap Dikerjakan'
-                            : 'Terkunci'}
+                              ? 'Selesai'
+                              : !pert.is_published
+                                ? 'Draft (Disembunyikan)'
+                                : isUnlocked
+                                  ? 'Siap Dikerjakan'
+                                  : 'Terkunci'}
                         </span>
-                        
+
                         <span className={`text-[10px] font-nunito font-extrabold uppercase tracking-wide ${subText}`}>
                           {pert.cbl_engage_json?.big_idea || 'Coding'}
                         </span>
 
                         {pert.materi_list_json && pert.materi_list_json.length > 0 && (
-                          <span className={`border px-2 py-0.5 rounded-lg text-[9px] font-bold flex items-center gap-1 ${
-                            isCompleted
+                          <span className={`border px-2 py-0.5 rounded-lg text-[9px] font-bold flex items-center gap-1 ${isCompleted
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-250'
                               : isUnlocked
-                              ? 'bg-blue-50 text-blue-800 border-blue-250'
-                              : 'bg-slate-150 text-slate-500 border-slate-200'
-                          }`}>
+                                ? 'bg-blue-50 text-blue-800 border-blue-250'
+                                : 'bg-slate-150 text-slate-500 border-slate-200'
+                            }`}>
                             <i className="ti ti-file-text" />
                             {pert.materi_list_json.length} Materi
                           </span>
                         )}
                       </div>
-                      
+
                       <h4 className={`font-fredoka text-sm md:text-base font-bold ${cardText}`}>
                         {pert.judul}
                       </h4>
@@ -565,14 +563,13 @@ export default function RoomDetail() {
                         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => handleTogglePublish(pert)}
-                            className={`px-3 py-1.5 border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer ${
-                              pert.is_published ? 'bg-indigo-50 text-indigo-750' : 'bg-slate-50 text-slate-500'
-                            }`}
+                            className={`px-3 py-1.5 border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer ${pert.is_published ? 'bg-indigo-50 text-indigo-750' : 'bg-slate-50 text-slate-500'
+                              }`}
                           >
                             <i className={pert.is_published ? "ti ti-eye" : "ti ti-eye-off"} />
                             {pert.is_published ? 'Sembunyikan' : 'Terbitkan'}
                           </button>
-                          
+
                           <button
                             onClick={() => handleOpenEditModal(pert)}
                             className="px-3 py-1.5 bg-yellow-400 text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer"
@@ -633,14 +630,14 @@ export default function RoomDetail() {
                 <i className="ti ti-speakerphone text-lg" />
                 Kelola Pengumuman Kelas
               </h3>
-              <button 
+              <button
                 onClick={() => setShowAnnouncementModal(false)}
                 className="text-[#0F172A] hover:opacity-75 cursor-pointer"
               >
                 <i className="ti ti-x text-lg font-bold" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSaveAnnouncement} className="p-6 flex flex-col gap-5 text-left">
               <div>
                 <label className="font-fredoka font-bold text-slate-700 text-xs mb-2 block">Teks Pengumuman Kelas:</label>
@@ -686,7 +683,7 @@ export default function RoomDetail() {
                 <i className="ti ti-edit-circle text-lg" />
                 {showAddModal ? 'Tambah Pertemuan Pembelajaran' : 'Edit Parameter Pertemuan'}
               </h3>
-              <button 
+              <button
                 onClick={() => {
                   setShowAddModal(false);
                   setShowEditModal(false);
@@ -696,7 +693,7 @@ export default function RoomDetail() {
                 <i className="ti ti-x text-lg font-bold" />
               </button>
             </div>
-            
+
             <form onSubmit={showAddModal ? handleCreatePertemuan : handleEditPertemuan} className="p-6 overflow-y-auto flex flex-col gap-5 text-left">
               {showAddModal && (
                 <div className="border-2 border-[#0F172A] p-3 rounded-xl bg-indigo-50/50 flex flex-col gap-2">
@@ -727,7 +724,7 @@ export default function RoomDetail() {
                     >
                       Kartu Profil (Lesson)
                     </button>
-                    
+
                     <button
                       type="button"
                       onClick={() => {
@@ -811,7 +808,7 @@ export default function RoomDetail() {
                   <i className="ti ti-bulb" />
                   Konteks Pembelajaran (CBL Engage)
                 </h4>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="sm:col-span-1">
                     <label className="font-nunito font-extrabold text-[10px] text-slate-500 uppercase block mb-1">Topik Besar (Big Idea):</label>
@@ -985,7 +982,7 @@ export default function RoomDetail() {
                     Terbitkan materi ini ke siswa
                   </label>
                 )}
-                
+
                 <div className="flex gap-3 ml-auto">
                   <button
                     type="button"
@@ -1126,9 +1123,8 @@ export default function RoomDetail() {
               <button
                 onClick={handleSaveRules}
                 disabled={rulesSaving || rulesLoading}
-                className={`px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-4 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-fredoka font-bold rounded-xl text-xs md:text-sm hover:-translate-y-0.5 active:translate-y-[0.5px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer flex items-center gap-1.5 ${
-                  (rulesSaving || rulesLoading) ? 'opacity-50 cursor-not-allowed shadow-none transform-none active:translate-y-0' : ''
-                }`}
+                className={`px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-4 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-fredoka font-bold rounded-xl text-xs md:text-sm hover:-translate-y-0.5 active:translate-y-[0.5px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer flex items-center gap-1.5 ${(rulesSaving || rulesLoading) ? 'opacity-50 cursor-not-allowed shadow-none transform-none active:translate-y-0' : ''
+                  }`}
               >
                 {rulesSaving ? (
                   <>

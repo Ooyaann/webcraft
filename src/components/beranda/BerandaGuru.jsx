@@ -57,7 +57,7 @@ export default function BerandaGuru({ user }) {
           <div className="bg-white/10 backdrop-blur-sm border-2 border-white/20 px-5 py-3 rounded-2xl flex items-center gap-3 shrink-0 shadow-inner">
             <i className="ti ti-calendar-stats text-3xl text-yellow-300 animate-pulse" />
             <div className="text-left">
-              <span className="text-[10px] font-bold text-emerald-250 block uppercase font-fredoka">Hari Ini</span>
+              <span className="text-[10px] font-bold text-yellow-300 block uppercase font-fredoka">Hari Ini</span>
               <span className="font-fredoka text-xs md:text-sm font-black text-white">
                 {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </span>
