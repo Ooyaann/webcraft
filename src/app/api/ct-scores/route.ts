@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { ctScores } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { handler, HttpError, parseBody } from "@/lib/http";
+import { assertMemberOfPertemuan } from "@/lib/rooms";
 
 const createSchema = z.object({
   decomposition: z.number().int(),
@@ -21,6 +22,8 @@ export const POST = handler(async (req) => {
     throw new HttpError(403, "Hanya siswa yang dapat menyimpan data nilai CT.");
   }
   const body = await parseBody(req, createSchema);
+  // Cegah pencemaran analitik guru: hanya anggota kelas pertemuan ini
+  await assertMemberOfPertemuan(user, body.pertemuan_id);
 
   const composite = Math.trunc(
     (body.decomposition +

@@ -9,7 +9,7 @@ import { handler, HttpError, parseBody } from "@/lib/http";
 
 const createSchema = z.object({
   name: z.string(),
-  ast: z.array(z.record(z.string(), z.unknown())),
+  ast: z.array(z.record(z.string(), z.unknown())).max(200),
 });
 
 // POST /api/creative[?project_id=] — simpan/perbarui proyek kreasi mandiri (siswa)

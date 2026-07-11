@@ -19,6 +19,11 @@ export default function RoomDetail() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  // Modal anggota kelas + reset password siswa (jalur "lupa password" via guru)
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [resetInfo, setResetInfo] = useState(null); // {name, password} — sekali tampil
+  const [resettingId, setResettingId] = useState(null);
   // Validator-rule editor (teacher)
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [rulesTaskId, setRulesTaskId] = useState(null);
@@ -369,15 +374,30 @@ export default function RoomDetail() {
           </p>
         </div>
 
-        <div className="flex gap-3 items-center shrink-0">
+        <div className="flex gap-3 items-center shrink-0 flex-wrap">
           {isTeacher && (
-            <button
-              onClick={() => setShowAnnouncementModal(true)}
-              className="px-4 py-2.5 bg-[#FACC15] text-[#0F172A] border-2 border-[#0F172A] shadow-[2.5px_2.5px_0px_#0F172A] font-fredoka text-xs font-bold rounded-xl hover:-translate-y-0.5 active:translate-y-[0.5px] cursor-pointer transition-all flex items-center gap-1.5"
-            >
-              <i className="ti ti-speakerphone" />
-              Kelola Pengumuman
-            </button>
+            <>
+              <button
+                onClick={() => setShowAnnouncementModal(true)}
+                className="px-4 py-2.5 bg-[#FACC15] text-[#0F172A] border-2 border-[#0F172A] shadow-[2.5px_2.5px_0px_#0F172A] font-fredoka text-xs font-bold rounded-xl hover:-translate-y-0.5 active:translate-y-[0.5px] cursor-pointer transition-all flex items-center gap-1.5"
+              >
+                <i className="ti ti-speakerphone" />
+                Kelola Pengumuman
+              </button>
+              <button
+                onClick={() => {
+                  setShowMembersModal(true);
+                  setResetInfo(null);
+                  api.get(`/rooms/${roomId}/members`)
+                    .then(res => setMembers(res.data || []))
+                    .catch(() => setMembers([]));
+                }}
+                className="px-4 py-2.5 bg-white text-[#0F172A] border-2 border-[#0F172A] shadow-[2.5px_2.5px_0px_#0F172A] font-fredoka text-xs font-bold rounded-xl hover:-translate-y-0.5 active:translate-y-[0.5px] cursor-pointer transition-all flex items-center gap-1.5"
+              >
+                <i className="ti ti-users" />
+                Anggota
+              </button>
+            </>
           )}
 
           <div className="bg-white border-2 border-[#0F172A] px-4 py-2 rounded-xl text-center shadow-[3px_3px_0px_#0F172A] shrink-0">
@@ -620,6 +640,87 @@ export default function RoomDetail() {
           </div>
         )}
       </section>
+
+      {/* Members & Reset Password Modal */}
+      {showMembersModal && typeof window !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-start overflow-y-auto p-4 pt-10 md:pt-16 pb-12">
+          <div className="w-full max-w-md bg-white border-4 border-[#0F172A] rounded-[24px] shadow-[8px_8px_0px_#0F172A] flex flex-col my-auto relative">
+            <div className="bg-[#3B82F6] text-white px-6 py-4 flex justify-between items-center border-b-4 border-[#0F172A] rounded-t-[20px]">
+              <h3 className="font-fredoka text-base font-bold flex items-center gap-1.5">
+                <i className="ti ti-users text-lg" />
+                Anggota Kelas ({members.length})
+              </h3>
+              <button
+                onClick={() => setShowMembersModal(false)}
+                className="text-white hover:opacity-75 cursor-pointer"
+              >
+                <i className="ti ti-x text-lg font-bold" />
+              </button>
+            </div>
+
+            <div className="p-5 flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+              {/* Password baru — hanya tampil sekali setelah reset */}
+              {resetInfo && (
+                <div className="bg-emerald-50 border-2 border-[#0F172A] rounded-xl p-4 shadow-[3px_3px_0px_#0F172A]">
+                  <p className="font-fredoka text-xs font-bold text-emerald-800 mb-1">
+                    <i className="ti ti-key mr-1" />Password baru untuk {resetInfo.name}:
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-white border-2 border-emerald-500 rounded-lg px-3 py-2 font-mono text-lg font-bold text-emerald-700 tracking-widest text-center select-all">
+                      {resetInfo.password}
+                    </code>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(resetInfo.password); alert('Password disalin!'); }}
+                      className="px-3 py-2 bg-emerald-500 text-white border-2 border-[#0F172A] rounded-lg font-fredoka text-xs font-bold cursor-pointer shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 transition-all"
+                    >
+                      <i className="ti ti-copy" />
+                    </button>
+                  </div>
+                  <p className="font-nunito text-[10px] font-bold text-emerald-700 mt-2">
+                    Catat dan sampaikan sekarang — password ini tidak akan ditampilkan lagi. Sesi lama siswa otomatis keluar.
+                  </p>
+                </div>
+              )}
+
+              {members.length === 0 ? (
+                <p className="font-nunito text-xs text-slate-500 font-bold text-center py-6">
+                  Belum ada siswa yang bergabung ke kelas ini.
+                </p>
+              ) : (
+                members.map((m) => (
+                  <div key={m.id} className="flex items-center justify-between gap-3 border-2 border-[#0F172A] rounded-xl p-3 bg-slate-50 shadow-[2px_2px_0px_#0F172A]">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-full bg-[#6366F1] text-white border-2 border-[#0F172A] flex items-center justify-center font-fredoka font-bold shrink-0">
+                        {m.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-fredoka text-sm font-bold text-slate-800 truncate">{m.name}</p>
+                        <p className="font-nunito text-[10px] font-bold text-slate-500 truncate">{m.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!confirm(`Reset password untuk ${m.name}? Password lama tidak berlaku lagi.`)) return;
+                        setResettingId(m.id);
+                        api.post(`/rooms/${roomId}/members/${m.id}/reset-password`)
+                          .then(res => setResetInfo({ name: res.data.name, password: res.data.new_password }))
+                          .catch(() => alert('Gagal me-reset password. Coba lagi.'))
+                          .finally(() => setResettingId(null));
+                      }}
+                      disabled={resettingId === m.id}
+                      className="px-3 py-1.5 bg-amber-400 text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer transition-all shrink-0 disabled:opacity-50"
+                    >
+                      <i className={`ti ${resettingId === m.id ? 'ti-loader animate-spin' : 'ti-key'} mr-1`} />
+                      Reset Password
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Classroom Announcement Modal */}
       {showAnnouncementModal && typeof window !== 'undefined' && createPortal(

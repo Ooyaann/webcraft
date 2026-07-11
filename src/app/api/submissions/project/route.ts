@@ -17,7 +17,7 @@ import { handler, HttpError, parseBody } from "@/lib/http";
 
 const submissionSchema = z.object({
   task_id: z.string(),
-  final_ast: z.array(z.record(z.string(), z.unknown())),
+  final_ast: z.array(z.record(z.string(), z.unknown())).max(200),
   ct_session_id: z.string().nullish(),
 });
 

@@ -21,7 +21,8 @@ import { validateAst, type AstNode } from "@/lib/validator";
 
 const submissionSchema = z.object({
   task_id: z.string(),
-  ast_snapshots: z.array(z.record(z.string(), z.unknown())),
+  // Cap eksplisit: cegah payload snapshot raksasa membengkakkan DB
+  ast_snapshots: z.array(z.record(z.string(), z.unknown())).max(100),
   attempt_count: z.number().int().min(0),
   ct_session_id: z.string().nullish(),
   reflection_answers: z.record(z.string(), z.unknown()).nullish(),

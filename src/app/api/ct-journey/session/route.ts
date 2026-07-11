@@ -6,6 +6,7 @@ import { getDb } from "@/db";
 import { ctJourneySessions, learningTasks, projectTasks } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { handler, HttpError, parseBody } from "@/lib/http";
+import { assertMemberOfPertemuan } from "@/lib/rooms";
 
 const saveSchema = z.object({
   session_id: z.string().nullish(),
@@ -44,25 +45,38 @@ export const POST = handler(async (req) => {
       .where(eq(ctJourneySessions.id, body.session_id))
       .limit(1);
     session = found ?? null;
+    // Cegah IDOR: siswa hanya boleh menulis ke sesinya sendiri
+    if (session && session.siswa_id !== user.id) {
+      throw new HttpError(403, "Anda tidak memiliki akses ke sesi CT Journey ini.");
+    }
   }
 
   if (!session) {
     // Sesi baru: ambil judul tantangan dari learning/project task terkait
     let challengeTitle = "Misi Coding Web";
+    let taskPertemuanId: string | null = null;
     const [lt] = await db
-      .select({ judul: learningTasks.judul })
+      .select({ judul: learningTasks.judul, pertemuan_id: learningTasks.pertemuan_id })
       .from(learningTasks)
       .where(eq(learningTasks.id, body.task_id))
       .limit(1);
     if (lt) {
       challengeTitle = lt.judul;
+      taskPertemuanId = lt.pertemuan_id;
     } else {
       const [pt] = await db
-        .select({ judul: projectTasks.judul })
+        .select({ judul: projectTasks.judul, pertemuan_id: projectTasks.pertemuan_id })
         .from(projectTasks)
         .where(eq(projectTasks.id, body.task_id))
         .limit(1);
-      if (pt) challengeTitle = pt.judul;
+      if (pt) {
+        challengeTitle = pt.judul;
+        taskPertemuanId = pt.pertemuan_id;
+      }
+    }
+    // Task nyata milik sebuah kelas → wajib anggota kelas itu
+    if (taskPertemuanId) {
+      await assertMemberOfPertemuan(user, taskPertemuanId);
     }
 
     const [created] = await db

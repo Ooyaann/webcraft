@@ -32,6 +32,7 @@ const params = <T>(p: T) => ({ params: Promise.resolve(p) });
 
 let guruToken = "";
 let siswaToken = "";
+let siswaId = "";
 let siswaLuarToken = ""; // siswa yang TIDAK bergabung ke kelas
 let roomId = "";
 let roomCode = "";
@@ -69,7 +70,9 @@ beforeAll(async () => {
     }),
     {},
   );
-  siswaToken = (await siswaRes.json()).access_token;
+  const siswaData = await siswaRes.json();
+  siswaToken = siswaData.access_token;
+  siswaId = siswaData.user.id;
 
   const luarRes = await register(
     jsonReq("/api/auth/register", "POST", {
@@ -387,6 +390,70 @@ describe("CT journey & scores", () => {
     const { GET } = await import("@/app/api/ct-scores/me/route");
     const mine = await GET(getReq("/api/ct-scores/me", siswaToken), {});
     expect(await mine.json()).toHaveLength(1);
+  });
+});
+
+describe("keamanan lanjutan", () => {
+  it("siswa luar kelas ditolak: ct-scores, ct-journey, appreciate (403)", async () => {
+    const { POST: postScore } = await import("@/app/api/ct-scores/route");
+    const scoreRes = await postScore(
+      jsonReq("/api/ct-scores", "POST", {
+        decomposition: 90, abstraction: 90, pattern_recognition: 90,
+        algorithm_design: 90, pertemuan_id: pertemuanId,
+      }, siswaLuarToken),
+      {},
+    );
+    expect(scoreRes.status).toBe(403);
+
+    const { POST: postJourney } = await import("@/app/api/ct-journey/session/route");
+    const journeyRes = await postJourney(
+      jsonReq("/api/ct-journey/session", "POST", {
+        task_id: learningTaskId, step: "decomposition", answer: "x",
+      }, siswaLuarToken),
+      {},
+    );
+    expect(journeyRes.status).toBe(403);
+
+    const { POST: appreciate } = await import(
+      "@/app/api/gallery/[submissionId]/appreciate/route"
+    );
+    const likeRes = await appreciate(
+      jsonReq(`/api/gallery/${projectSubmissionId}/appreciate`, "POST", undefined, siswaLuarToken),
+      params({ submissionId: projectSubmissionId }),
+    );
+    expect(likeRes.status).toBe(403);
+  });
+
+  it("guru me-reset password siswa; siswa lain ditolak", async () => {
+    const { POST } = await import(
+      "@/app/api/rooms/[roomId]/members/[siswaId]/reset-password/route"
+    );
+    const denied = await POST(
+      jsonReq(`/api/rooms/${roomId}/members/${siswaId}/reset-password`, "POST", undefined, siswaLuarToken),
+      params({ roomId, siswaId }),
+    );
+    expect(denied.status).toBe(403);
+
+    const res = await POST(
+      jsonReq(`/api/rooms/${roomId}/members/${siswaId}/reset-password`, "POST", undefined, guruToken),
+      params({ roomId, siswaId }),
+    );
+    expect(res.status).toBe(200);
+    const { new_password } = await res.json();
+    expect(new_password).toHaveLength(8);
+
+    // Password lama mati, password baru hidup
+    const { POST: login } = await import("@/app/api/auth/login/route");
+    const oldLogin = await login(
+      jsonReq("/api/auth/login", "POST", { email: "andi@siswa.com", password: "siswa12345" }),
+      {},
+    );
+    expect(oldLogin.status).toBe(401);
+    const newLogin = await login(
+      jsonReq("/api/auth/login", "POST", { email: "andi@siswa.com", password: new_password }),
+      {},
+    );
+    expect(newLogin.status).toBe(200);
   });
 });
 

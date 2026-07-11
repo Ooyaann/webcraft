@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import * as XLSX from 'xlsx';
 import { useStore } from '../store/useStore';
 import api from '../services/api';
 import { aiService } from '../services/aiService';
@@ -20,6 +19,8 @@ export default function PenilaianAnalitik() {
     if (!activeRoom || isExporting) return;
     setIsExporting(true);
     try {
+      // Lazy-load SheetJS hanya saat tombol diklik — tidak membebani load halaman
+      const XLSX = await import('xlsx');
       const { data } = await api.get(`/rooms/${activeRoom.id}/export`);
       const fmtDate = (d) => (d ? new Date(d).toLocaleString('id-ID') : '-');
       const wb = XLSX.utils.book_new();

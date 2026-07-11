@@ -6,9 +6,11 @@ import {
   appreciationLogs,
   galleryItems,
   projectSubmissions,
+  projectTasks,
 } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { handler, HttpError } from "@/lib/http";
+import { assertMemberOfPertemuan } from "@/lib/rooms";
 
 type Ctx = { params: Promise<{ submissionId: string }> };
 
@@ -24,6 +26,14 @@ export const POST = handler<Ctx>(async (req, ctx) => {
     .where(eq(projectSubmissions.id, submissionId))
     .limit(1);
   if (!sub) throw new HttpError(404, "Karya proyek tidak ditemukan.");
+
+  // Apresiasi hanya dari anggota kelas karya tersebut (siswa lintas kelas ditolak)
+  const [task] = await db
+    .select({ pertemuan_id: projectTasks.pertemuan_id })
+    .from(projectTasks)
+    .where(eq(projectTasks.id, sub.task_id))
+    .limit(1);
+  if (task) await assertMemberOfPertemuan(user, task.pertemuan_id);
 
   // Transaksi: log apresiasi + counter + status publikasi harus konsisten;
   // HttpError di dalam transaksi otomatis me-rollback semuanya.
