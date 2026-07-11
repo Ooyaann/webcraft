@@ -6,30 +6,31 @@ export default function MouseTrail() {
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    // 1. Deteksi awal: Jika pointer utama adalah 'fine' (mouse/touchpad), aktifkan kursor custom
-    const matchesFine = window.matchMedia('(pointer: fine)').matches;
-    if (matchesFine) {
-      setIsDesktop(true);
-      return;
-    }
+    const check = () => {
+      // Deteksi jika perangkat adalah mobile atau tablet (termasuk iPadOS yang mengaku macOS di Safari)
+      const isMobileOrTablet = 
+        /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
 
-    // 2. Deteksi dinamis: Jika ada pergerakan mouse (pada laptop touchscreen hybrid)
-    const onMouseMove = () => {
-      setIsDesktop(true);
-      window.removeEventListener('mousemove', onMouseMove);
+      // Aktifkan kursor kustom hanya di layar desktop lebar (>= 1024px) dengan mouse/trackpad (pointer: fine)
+      const isLargeScreen = window.innerWidth >= 1024;
+      const matchesFine = window.matchMedia('(pointer: fine)').matches;
+      setIsDesktop(!isMobileOrTablet && isLargeScreen && matchesFine);
     };
-    window.addEventListener('mousemove', onMouseMove);
+
+    check();
+    window.addEventListener('resize', check);
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('resize', check);
     };
   }, []);
 
   useEffect(() => {
     // 1. Sparkle explosion on pointerdown/click (works on touch and non-touch)
     const handlePointerDown = (e) => {
-      const x = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : null);
-      const y = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : null);
-      if (x == null || y == null) return;
+      const x = e.clientX;
+      const y = e.clientY;
+      if (typeof x !== 'number' || typeof y !== 'number') return;
 
       const colors = ['#FACC15', '#3B82F6', '#10B981', '#EC4899', '#6366F1', '#FFA500'];
       const count = 10;

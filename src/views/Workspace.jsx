@@ -62,9 +62,9 @@ export default function Workspace({ isSandbox = false }) {
   const [isCompact, setIsCompact] = useState(false);
   useEffect(() => {
     const check = () => {
-      // Blokir rotasi hanya untuk layar kecil (HP portrait asli < 640px).
-      // Tablet (seperti iPad portrait lebar >= 768px) diizinkan mengakses workspace.
-      setIsPortraitPhone(window.innerWidth < 640 && window.innerHeight > window.innerWidth);
+      // Blokir rotasi untuk layar kecil dan medium (HP/Tablet portrait < 1024px).
+      // Workspace membutuhkan layar melebar (landscape) untuk menampilkan seluruh editor.
+      setIsPortraitPhone(window.innerWidth < 1024 && window.innerHeight > window.innerWidth);
       
       // Mode compact (tabbed) diaktifkan untuk HP landscape (tinggi <= 500px) ATAU tablet landscape/portrait (lebar < 1200px)
       setIsCompact(window.innerWidth < 1200 || window.innerHeight <= 500);
@@ -428,9 +428,9 @@ export default function Workspace({ isSandbox = false }) {
           <div className="w-20 h-20 border-4 border-white rounded-2xl flex items-center justify-center animate-wiggle" style={{ animationDuration: '2s' }}>
             <i className="ti ti-device-mobile-rotated text-white text-5xl" />
           </div>
-          <h3 className="font-fredoka text-xl font-bold text-white">Putar HP-mu ke Mode Landscape</h3>
+          <h3 className="font-fredoka text-xl font-bold text-white">Putar Layarmu ke Mode Landscape</h3>
           <p className="font-nunito text-sm font-bold text-slate-300 max-w-xs leading-relaxed">
-            Workspace Triple-View butuh layar melebar supaya palet blok, kanvas, dan preview muat bersamaan. Putar HP-mu, ya!
+            Workspace Triple-View butuh layar melebar supaya palet blok, kanvas, dan preview muat bersamaan. Putar perangkatmu, ya!
           </p>
           <button
             onClick={() => navigate(isSandbox ? '/' : '/ruang-belajar')}
