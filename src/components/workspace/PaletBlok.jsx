@@ -76,7 +76,7 @@ const BLOCK_GROUPS = [
   }
 ];
 
-export default function PaletBlok() {
+export default function PaletBlok({ isCompact = false }) {
   const { addBlock, selectedContainerId, ast } = useStore();
   const [openGroups, setOpenGroups] = React.useState({
     'containers': true, // Open by default
@@ -121,23 +121,27 @@ export default function PaletBlok() {
   };
 
   return (
-    <div className="bg-white p-4 flex flex-col gap-4 h-full text-left overflow-hidden">
-      <div>
-        <h3 className="font-fredoka text-base font-bold text-[#0F172A] flex items-center gap-1.5 border-b-2 border-dashed border-slate-200 pb-2">
-          <i className="ti ti-square-plus text-blue-600 text-lg animate-pulse" />
+    <div className={`bg-white flex flex-col h-full text-left overflow-hidden ${isCompact ? 'p-2 gap-1.5' : 'p-4 gap-4'}`}>
+      {!isCompact && <div>
+        <h3 className="font-fredoka text-sm font-bold text-[#0F172A] flex items-center gap-1.5 border-b-2 border-dashed border-slate-200 pb-2">
+          <i className="ti ti-square-plus text-blue-600 text-base animate-pulse" />
           Palet Blok HTML
         </h3>
         <p className="font-nunito text-[10px] text-slate-500 font-bold leading-normal mt-1">
           Klik atau drag elemen ke kanvas struktur untuk merakit halaman web.
         </p>
-      </div>
+      </div>}
+      {isCompact && <h3 className="font-fredoka text-[10px] font-bold text-[#0F172A] flex items-center gap-1 shrink-0">
+        <i className="ti ti-square-plus text-blue-600 text-xs" />
+        Palet Blok
+      </h3>}
 
-      <div className="flex flex-col gap-3.5 flex-1 overflow-y-auto pb-8 pr-1 custom-scrollbar">
+      <div className={`flex flex-col flex-1 overflow-y-auto pb-4 pr-1 custom-scrollbar ${isCompact ? 'gap-1.5' : 'gap-3.5'}`}>
         {BLOCK_GROUPS.map((group) => (
           <div key={group.id} className="border-4 border-[#0F172A] rounded-[20px] overflow-hidden shadow-[3px_3px_0px_#0F172A] bg-white shrink-0">
             <button
               onClick={() => toggleGroup(group.id)}
-              className={`w-full ${getGroupHeaderClass(group.id)} px-4 py-3 flex items-center justify-between border-b-4 border-[#0F172A] transition-colors font-fredoka text-xs font-bold`}
+              className={`w-full ${getGroupHeaderClass(group.id)} flex items-center justify-between border-b-4 border-[#0F172A] transition-colors font-fredoka font-bold ${isCompact ? 'px-2.5 py-1.5 text-[10px]' : 'px-4 py-3 text-xs'}`}
             >
               <div className="flex items-center gap-2">
                 <i className={`ti ${group.icon} text-sm`} />
@@ -147,7 +151,7 @@ export default function PaletBlok() {
             </button>
             
             {openGroups[group.id] && (
-              <div className="p-3 flex flex-col gap-2.5 bg-[#FAFBFB] max-h-64 overflow-y-auto border-t-2 border-[#0F172A] custom-scrollbar">
+              <div className={`flex flex-col bg-[#FAFBFB] overflow-y-auto border-t-2 border-[#0F172A] custom-scrollbar ${isCompact ? 'p-1.5 gap-1 max-h-40' : 'p-3 gap-2.5 max-h-64'}`}>
                 {group.blocks.map(block => (
                   <button
                     key={block.type}
@@ -159,16 +163,16 @@ export default function PaletBlok() {
                     }}
                     onMouseEnter={(e) => showTooltip(e, block)}
                     onMouseLeave={hideTooltip}
-                    className="group relative w-full text-left p-2.5 bg-white border-2 border-slate-200 hover:border-[#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] rounded-xl flex items-center gap-3 transition-all cursor-grab active:cursor-grabbing hover:shadow-[2px_2px_0px_#0F172A] active:shadow-none"
+                    className={`group relative w-full text-left bg-white border-2 border-slate-200 hover:border-[#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] rounded-lg flex items-center transition-all cursor-grab active:cursor-grabbing hover:shadow-[2px_2px_0px_#0F172A] active:shadow-none ${isCompact ? 'p-1.5 gap-2' : 'p-2.5 gap-3'}`}
                   >
-                    <div className={`w-8 h-8 rounded-lg ${group.color} flex items-center justify-center border-2 border-transparent group-hover:border-[#0F172A] shrink-0 transition-colors shadow-sm`}>
-                      <i className={`ti ${block.icon} text-sm`} />
+                    <div className={`rounded-md ${group.color} flex items-center justify-center border-2 border-transparent group-hover:border-[#0F172A] shrink-0 transition-colors shadow-sm ${isCompact ? 'w-5 h-5' : 'w-8 h-8'}`}>
+                      <i className={`ti ${block.icon} ${isCompact ? 'text-[10px]' : 'text-sm'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-mono text-xs font-bold text-slate-700 group-hover:text-[#0F172A] transition-colors">{block.name}</p>
-                      <p className="font-nunito text-[9.5px] text-slate-400 group-hover:text-slate-600 font-bold leading-normal mt-0.5 transition-colors whitespace-normal break-words">
+                      <p className={`font-mono font-bold text-slate-700 group-hover:text-[#0F172A] transition-colors ${isCompact ? 'text-[10px]' : 'text-xs'}`}>{block.name}</p>
+                      {!isCompact && <p className="font-nunito text-[9.5px] text-slate-400 group-hover:text-slate-600 font-bold leading-normal mt-0.5 transition-colors whitespace-normal break-words">
                         {block.desc}
-                      </p>
+                      </p>}
                     </div>
                   </button>
                 ))}

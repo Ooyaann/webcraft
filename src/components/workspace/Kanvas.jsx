@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../../store/useStore';
 import KanvasItem from './KanvasItem';
 
-export default function Kanvas() {
+export default function Kanvas({ isCompact = false }) {
   const { ast, resetWorkspace } = useStore();
 
   const handleReset = () => {
@@ -12,22 +12,22 @@ export default function Kanvas() {
   };
 
   return (
-    <div className="bg-white p-4 h-full flex flex-col gap-4 overflow-y-auto text-left">
+    <div className={`bg-white h-full flex flex-col overflow-y-auto text-left ${isCompact ? 'p-2 gap-2' : 'p-4 gap-4'}`}>
       {/* Canvas Header */}
-      <div className="flex justify-between items-center pb-2 border-b-2 border-slate-200">
+      <div className={`flex justify-between items-center border-b-2 border-slate-200 ${isCompact ? 'pb-1' : 'pb-2'}`}>
         <div>
-          <h3 className="font-fredoka text-base font-bold text-[#0F172A] flex items-center gap-1.5">
-            <i className="ti ti-stack-2 text-[#10B981] font-bold" />
+          <h3 className={`font-fredoka font-bold text-[#0F172A] flex items-center gap-1.5 ${isCompact ? 'text-[10px]' : 'text-base'}`}>
+            <i className={`ti ti-stack-2 text-[#10B981] font-bold ${isCompact ? 'text-xs' : ''}`} />
             Struktur Kanvas
           </h3>
-          <p className="font-nunito text-[10px] text-slate-500 font-bold leading-none mt-1">
+          {!isCompact && <p className="font-nunito text-[10px] text-slate-500 font-bold leading-none mt-1">
             Susun elemen web Anda dengan susunan bersarang (nesting) di bawah ini.
-          </p>
+          </p>}
         </div>
         
         <button
           onClick={handleReset}
-          className="px-2.5 py-1 bg-red-50 hover:bg-red-100 border-2 border-[#0F172A] text-red-750 font-fredoka font-bold text-[10px] rounded shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] cursor-pointer transition-all flex items-center gap-1"
+          className={`bg-red-50 hover:bg-red-100 border-2 border-[#0F172A] text-red-700 font-fredoka font-bold rounded shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] cursor-pointer transition-all flex items-center gap-1 ${isCompact ? 'px-1.5 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]'}`}
           title="Reset Kanvas"
         >
           <i className="ti ti-rotate-clockwise text-xs" />

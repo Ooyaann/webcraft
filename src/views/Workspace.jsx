@@ -79,9 +79,13 @@ export default function Workspace({ isSandbox = false }) {
 
   // HP portrait: Triple-View butuh layar lebar → minta putar ke landscape.
   const [isPortraitPhone, setIsPortraitPhone] = useState(false);
+  // ponytail: single flag for compact layout on short screens (mobile landscape)
+  const [isCompact, setIsCompact] = useState(false);
   useEffect(() => {
-    const check = () =>
+    const check = () => {
       setIsPortraitPhone(window.innerWidth < 820 && window.innerHeight > window.innerWidth);
+      setIsCompact(window.innerHeight <= 500);
+    };
     check();
     window.addEventListener('resize', check);
     window.addEventListener('orientationchange', check);
@@ -413,8 +417,8 @@ export default function Workspace({ isSandbox = false }) {
       )}
 
       {/* Top Toolbar Navigation */}
-      <header className="w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-6 py-3.5 flex justify-between items-center border-b-4 border-[#0F172A] shrink-0 shadow-md">
-        <div className="flex items-center gap-3">
+      <header className={`w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex justify-between items-center border-b-4 border-[#0F172A] shrink-0 shadow-md ${isCompact ? 'px-3 py-1.5' : 'px-6 py-3.5'}`}>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => {
               if (isSandbox) {
@@ -423,60 +427,60 @@ export default function Workspace({ isSandbox = false }) {
                 navigate('/ruang-belajar');
               }
             }}
-            className="p-1.5 border-2 border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer flex items-center justify-center animate-fade-in"
+            className="p-1 border-2 border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center"
           >
-            <i className="ti ti-arrow-left text-base" />
+            <i className={`ti ti-arrow-left ${isCompact ? 'text-sm' : 'text-base'}`} />
           </button>
           <div className="text-left leading-none">
-            <h2 className="font-fredoka text-base font-bold text-white tracking-tight">
+            <h2 className={`font-fredoka font-bold text-white tracking-tight ${isCompact ? 'text-xs' : 'text-base'}`}>
               Misi: {activeLevelConfig?.judul || 'Memuat...'}
             </h2>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1">Ruang Praktik Mandiri</span>
+            {!isCompact && <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1">Ruang Praktik Mandiri</span>}
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center ${isCompact ? 'gap-1.5' : 'gap-3'}`}>
           <button
             type="button"
             onClick={() => setIsOnboardingOpen(true)}
             title="Buka Panduan Penggunaan"
-            className="px-3 py-1.5 border-2 border-indigo-400 bg-indigo-950 hover:bg-indigo-900 text-indigo-200 hover:text-white font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px]"
+            className={`border-2 border-indigo-400 bg-indigo-950 hover:bg-indigo-900 text-indigo-200 hover:text-white font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2 py-1 text-[10px]' : 'px-3 py-1.5 text-xs'}`}
           >
-            <i className="ti ti-help text-sm animate-pulse" />
-            <span className="hidden sm:inline">Panduan</span>
+            <i className={`ti ti-help ${isCompact ? 'text-xs' : 'text-sm'} animate-pulse`} />
+            {!isCompact && <span className="hidden sm:inline">Panduan</span>}
           </button>
 
           <button
             type="button"
             onClick={() => setShowPreview(prev => !prev)}
-            className={`px-3 py-1.5 border-2 border-slate-700 font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px] ${
+            className={`border-2 border-slate-700 font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2 py-1 text-[10px]' : 'px-3 py-1.5 text-xs'} ${
               showPreview ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-800 text-slate-350 hover:bg-slate-700'
             }`}
           >
-            <i className={`ti ${showPreview ? 'ti-layout-sidebar-right-collapse' : 'ti-layout-sidebar-right-expand'} text-sm`} />
-            <span className="hidden sm:inline">{showPreview ? 'Sembunyikan Preview' : 'Tampilkan Preview'}</span>
+            <i className={`ti ${showPreview ? 'ti-layout-sidebar-right-collapse' : 'ti-layout-sidebar-right-expand'} ${isCompact ? 'text-xs' : 'text-sm'}`} />
+            {!isCompact && <span className="hidden sm:inline">{showPreview ? 'Sembunyikan Preview' : 'Tampilkan Preview'}</span>}
           </button>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <button
               onClick={undo}
               disabled={!canUndo}
               title="Urungkan (Ctrl+Z)"
-              className="p-1.5 border-2 border-slate-700 rounded-xl transition-all cursor-pointer text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              className={`border-2 border-slate-700 rounded-lg transition-all cursor-pointer text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent ${isCompact ? 'p-0.5' : 'p-1.5'}`}
             >
-              <i className="ti ti-arrow-back-up text-base" />
+              <i className={`ti ti-arrow-back-up ${isCompact ? 'text-sm' : 'text-base'}`} />
             </button>
             <button
               onClick={redo}
               disabled={!canRedo}
               title="Ulangi (Ctrl+Y)"
-              className="p-1.5 border-2 border-slate-700 rounded-xl transition-all cursor-pointer text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              className={`border-2 border-slate-700 rounded-lg transition-all cursor-pointer text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent ${isCompact ? 'p-0.5' : 'p-1.5'}`}
             >
-              <i className="ti ti-arrow-forward-up text-base" />
+              <i className={`ti ti-arrow-forward-up ${isCompact ? 'text-sm' : 'text-base'}`} />
             </button>
           </div>
-          <span className="px-3.5 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-[#0F172A] border-2 border-[#0F172A] font-fredoka text-xs font-black rounded-xl shadow-[2px_2px_0px_#0F172A] flex items-center gap-1 shrink-0">
-            <i className="ti ti-rocket text-sm animate-bounce-slow" />
+          <span className={`bg-gradient-to-r from-amber-400 to-amber-500 text-[#0F172A] border-2 border-[#0F172A] font-fredoka font-black rounded-lg shadow-[2px_2px_0px_#0F172A] flex items-center gap-1 shrink-0 ${isCompact ? 'px-2 py-0.5 text-[9px]' : 'px-3.5 py-1.5 text-xs'}`}>
+            <i className={`ti ti-rocket ${isCompact ? 'text-[10px]' : 'text-sm'} animate-bounce-slow`} />
             Fase Action
           </span>
         </div>
@@ -487,25 +491,25 @@ export default function Workspace({ isSandbox = false }) {
         
         {/* Mission Instructions Panel */}
         {activeLevelConfig?.misi && (
-          <div className={`border-b-4 border-[#0F172A] px-4 py-3 flex items-center gap-3 shrink-0 ${
+          <div className={`border-b-4 border-[#0F172A] flex items-center gap-2 shrink-0 ${isCompact ? 'px-2.5 py-1' : 'px-4 py-3'} ${
             isSandbox 
               ? 'bg-gradient-to-r from-amber-50 via-amber-50/50 to-yellow-50/30' 
               : 'bg-gradient-to-r from-indigo-50 via-indigo-50/50 to-blue-50/30'
           }`}>
-            <div className={`border-2 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+            <div className={`border-2 rounded-lg flex items-center justify-center shrink-0 ${isCompact ? 'w-5 h-5' : 'w-8 h-8'} ${
               isSandbox
                 ? 'bg-amber-100 border-amber-500 shadow-[1px_1px_0px_rgba(245,158,11,0.3)]'
                 : 'bg-indigo-100 border-indigo-500 shadow-[1px_1px_0px_rgba(99,102,241,0.3)]'
             }`}>
-              <i className={`ti ${isSandbox ? 'ti-flask' : 'ti-target'} ${isSandbox ? 'text-amber-600' : 'text-indigo-600'} text-base animate-pulse`} />
+              <i className={`ti ${isSandbox ? 'ti-flask' : 'ti-target'} ${isSandbox ? 'text-amber-600' : 'text-indigo-600'} ${isCompact ? 'text-xs' : 'text-base'} animate-pulse`} />
             </div>
-            <div className="text-left">
-              <span className={`font-fredoka text-[9px] font-black uppercase tracking-widest block leading-none ${
+            <div className="text-left min-w-0">
+              {!isCompact && <span className={`font-fredoka text-[9px] font-black uppercase tracking-widest block leading-none ${
                 isSandbox ? 'text-amber-600' : 'text-indigo-600'
               }`}>
                 {isSandbox ? 'Ruang Eksperimen Bebas (Sandbox)' : 'Misi yang harus dikerjakan'}
-              </span>
-              <p className="font-nunito text-xs text-slate-800 font-bold leading-relaxed mt-0.5">{activeLevelConfig.misi}</p>
+              </span>}
+              <p className={`font-nunito text-slate-800 font-bold leading-snug ${isCompact ? 'text-[10px] line-clamp-1' : 'text-xs leading-relaxed mt-0.5'}`}>{activeLevelConfig.misi}</p>
             </div>
           </div>
         )}
@@ -513,7 +517,7 @@ export default function Workspace({ isSandbox = false }) {
         <div className="flex-1 w-full flex items-stretch overflow-hidden">
           {/* Left Panel (Palette) */}
           <div className="h-full overflow-hidden bg-slate-50 shrink-0" style={{ width: paletteWidth }}>
-            <PaletBlok />
+            <PaletBlok isCompact={isCompact} />
           </div>
 
           {/* Pembatas geser: Palet ↔ Editor */}
@@ -525,35 +529,35 @@ export default function Workspace({ isSandbox = false }) {
 
           {/* Middle Panel (Editor: Kanvas & Code) */}
           <div className="flex-1 h-full flex flex-col overflow-hidden bg-white min-w-0">
-            <div className="bg-slate-50 border-b-4 border-[#0F172A] p-2.5 flex justify-start gap-2.5 shrink-0">
+            <div className={`bg-slate-50 border-b-4 border-[#0F172A] flex justify-start shrink-0 ${isCompact ? 'p-1 gap-1.5' : 'p-2.5 gap-2.5'}`}>
               <button
                 type="button"
                 onClick={() => setActiveTab('kanvas')}
-                className={`px-4.5 py-2 border-2 border-[#0F172A] font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${activeTab === 'kanvas'
+                className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2.5 py-1 text-[10px]' : 'px-4.5 py-2 text-xs'} ${activeTab === 'kanvas'
                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-none translate-y-[1px]'
-                    : 'bg-white text-slate-655 hover:bg-slate-100/75'
+                    : 'bg-white text-slate-600 hover:bg-slate-100/75'
                   }`}
               >
-                <i className="ti ti-layout-grid text-sm" />
+                <i className={`ti ti-layout-grid ${isCompact ? 'text-xs' : 'text-sm'}`} />
                 Kanvas Rakit
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('code')}
-                className={`px-4.5 py-2 border-2 border-[#0F172A] font-fredoka text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${activeTab === 'code'
+                className={`border-2 border-[#0F172A] font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] ${isCompact ? 'px-2.5 py-1 text-[10px]' : 'px-4.5 py-2 text-xs'} ${activeTab === 'code'
                     ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-none translate-y-[1px]'
-                    : 'bg-white text-slate-655 hover:bg-slate-100/75'
+                    : 'bg-white text-slate-600 hover:bg-slate-100/75'
                   }`}
               >
-                <i className="ti ti-code text-sm" />
+                <i className={`ti ti-code ${isCompact ? 'text-xs' : 'text-sm'}`} />
                 Kode HTML
               </button>
             </div>
 
             <div className="flex-1 w-full relative overflow-y-auto bg-slate-50">
               <div className={`absolute inset-0 w-full h-full p-0 flex flex-col ${activeTab === 'kanvas' ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'}`}>
-                <Kanvas />
+                <Kanvas isCompact={isCompact} />
               </div>
               <div className={`absolute inset-0 w-full h-full p-4 flex flex-col ${activeTab === 'code' ? 'z-10 opacity-100 font-mono' : 'z-0 opacity-0 pointer-events-none'}`}>
                 <CodePanel />
@@ -577,9 +581,9 @@ export default function Workspace({ isSandbox = false }) {
             }`}
             style={{ width: showPreview ? previewWidth : 0 }}
           >
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-b-4 border-[#0F172A] p-2 flex items-center justify-center gap-2 shrink-0 h-[52px] shadow-sm">
-              <i className="ti ti-eye text-white text-base animate-pulse" />
-              <span className="font-fredoka text-sm font-bold text-white tracking-wide">Hasil Live Preview</span>
+            <div className={`bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-b-4 border-[#0F172A] flex items-center justify-center gap-1.5 shrink-0 shadow-sm ${isCompact ? 'py-1 px-2' : 'p-2 h-[52px]'}`}>
+              <i className={`ti ti-eye text-white ${isCompact ? 'text-xs' : 'text-base'} animate-pulse`} />
+              <span className={`font-fredoka font-bold text-white tracking-wide ${isCompact ? 'text-[10px]' : 'text-sm'}`}>Live Preview</span>
             </div>
             <div className="flex-1 relative bg-white p-4 overflow-y-auto">
               <PreviewPanel />
@@ -588,7 +592,7 @@ export default function Workspace({ isSandbox = false }) {
         </div>
 
         {/* Global Action Footer Bar */}
-        <div className="bg-white border-t-4 border-[#0F172A] p-4 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
+        <div className={`bg-white border-t-4 border-[#0F172A] flex flex-col sm:flex-row justify-between items-center shrink-0 ${isCompact ? 'p-1.5 gap-1.5' : 'p-4 gap-4'}`}>
           <div className="flex items-center gap-3 text-left w-full sm:w-auto">
             <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white border-2 border-[#0F172A] px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A]">
               <i className="ti ti-history text-white text-xs animate-spin-slow" />
@@ -678,7 +682,7 @@ export default function Workspace({ isSandbox = false }) {
 
       {/* Validation Result Detail List */}
       {showValidationResult && validationErrors.length > 0 && (
-        <div className="bg-red-50 border-t-4 border-[#0F172A] p-4 text-left shrink-0 max-h-[140px] overflow-y-auto">
+        <div className={`bg-red-50 border-t-4 border-[#0F172A] text-left shrink-0 overflow-y-auto ${isCompact ? 'p-2 max-h-[60px]' : 'p-4 max-h-[140px]'}`}>
           <h4 className="font-nunito text-xs font-bold text-red-750 flex items-center gap-1 mb-2">
             <i className="ti ti-alert-triangle text-red-600 text-sm font-bold" />
             Rincian Kesalahan Struktur Kode:
