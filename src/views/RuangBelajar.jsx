@@ -16,7 +16,7 @@ export default function RuangBelajar() {
   const navigate = useNavigate();
   const { user, setActiveRoom, resetWorkspace } = useStore();
   const [rooms, setRooms] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   // Form states

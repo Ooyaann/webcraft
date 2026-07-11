@@ -12,7 +12,7 @@ export default function RoomDetail() {
   const [pertemuanList, setPertemuanList] = useState([]);
   const [completedTaskIds, setCompletedTaskIds] = useState(new Set());
   const [remedialIds, setRemedialIds] = useState(new Set());
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Modal control states
