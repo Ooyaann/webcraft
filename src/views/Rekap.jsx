@@ -188,6 +188,36 @@ export default function Rekap() {
         </p>
       </div>
 
+      {/* Bahan Ajar & Materi Pembelajaran */}
+      {pertemuan?.materi_list_json && pertemuan.materi_list_json.length > 0 && (
+        <section className="p-6 border-4 border-[#0F172A] bg-[#EFF6FF] rounded-[24px] shadow-[6px_6px_0px_#0F172A] flex flex-col gap-4 text-left">
+          <h3 className="font-fredoka text-base font-bold text-[#0F172A] flex items-center gap-2">
+            <i className="ti ti-file-text text-blue-600 text-xl animate-pulse" />
+            Bahan Ajar & Materi Pendukung
+          </h3>
+          <p className="font-nunito text-xs text-slate-600 font-bold -mt-1">
+            Materi pendukung yang diunggah oleh guru untuk pertemuan ini:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+            {pertemuan.materi_list_json.map((m, idx) => (
+              <a
+                key={idx}
+                href={m.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-2 border-[#0F172A] p-3 rounded-xl bg-white hover:bg-blue-50 hover:-translate-y-0.5 shadow-[2.5px_2.5px_0px_#0F172A] transition-all flex items-center justify-between text-xs font-nunito font-bold text-slate-800"
+              >
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <i className="ti ti-file-symlink text-blue-600 text-base" />
+                  <span className="truncate">{m.title}</span>
+                </div>
+                <i className="ti ti-external-link text-slate-400" />
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Learning mission recap */}
       {learning && (
         <section className="bg-white border-4 border-[#0F172A] rounded-[24px] shadow-[6px_6px_0px_#0F172A] p-6 flex flex-col gap-5">
@@ -212,30 +242,6 @@ export default function Rekap() {
               <p className="font-nunito text-[9px] font-bold text-pink-600 uppercase">Algoritma CT</p>
               <p className="font-fredoka text-2xl font-bold text-slate-800">{ctPost.algorithm_design || '-'}</p>
             </div>
-          </div>
-
-          {/* Transparansi perhitungan nilai (rumus terbuka, bukan angka misterius) */}
-          <div className={`border-2 border-[#0F172A] rounded-xl p-4 shadow-[3px_3px_0px_#0F172A] text-left ${learning.tuntas === false ? 'bg-amber-50' : 'bg-emerald-50'}`}>
-            <div className="flex flex-wrap justify-between items-center gap-2">
-              <p className="font-fredoka text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                <i className="ti ti-calculator" /> Cara Nilai Ini Dihitung
-              </p>
-              <span className={`text-[10px] font-fredoka font-bold px-2 py-0.5 rounded-lg border-2 ${
-                learning.tuntas === false
-                  ? 'text-amber-700 bg-white border-amber-500'
-                  : 'text-emerald-700 bg-white border-emerald-500'
-              }`}>
-                {learning.tuntas === false
-                  ? `Belum Tuntas — di bawah KKM ${learning.kkm ?? 70}`
-                  : `Tuntas (≥ KKM ${learning.kkm ?? 70})`}
-                {learning.is_remedial ? ' · Nilai Remidi' : ''}
-              </span>
-            </div>
-            <ul className="font-nunito text-[11px] font-bold text-slate-700 mt-2 space-y-1">
-              <li>• Akurasi = 100 − 15 × jumlah error struktur pada karya final = <b>{learning.accuracy}</b></li>
-              <li>• Efisiensi = berdasarkan {learning.attempts}x percobaan (≤1→100, 2→90, 3→80, 4→70, ≥5→60) = <b>{learning.efficiency ?? '-'}</b></li>
-              <li>• Skor Akhir = (Akurasi + Efisiensi) ÷ 2 = ({learning.accuracy} + {learning.efficiency ?? '?'}) ÷ 2 = <b>{learning.ctScore}</b>{learning.is_remedial ? ` (dibatasi maks KKM ${learning.kkm ?? 70} karena remidi)` : ''}</li>
-            </ul>
           </div>
 
           <div>
