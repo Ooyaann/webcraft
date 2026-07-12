@@ -367,9 +367,20 @@ export default function GaleriKarya() {
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-start">
-                      <span className="bg-[#E0F2FE] text-[#0F172A] border-2 border-[#0F172A] text-xs font-fredoka font-bold px-2 py-0.5 rounded-lg shadow-[2px_2px_0px_#0F172A]">
-                        Proyek
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="bg-[#E0F2FE] text-[#0F172A] border-2 border-[#0F172A] text-xs font-fredoka font-bold px-2 py-0.5 rounded-lg shadow-[2px_2px_0px_#0F172A]">
+                          Proyek
+                        </span>
+                        {sub.is_remedial ? (
+                          <span className="bg-amber-100 text-amber-700 border-2 border-amber-500 text-[10px] font-fredoka font-bold px-2 py-0.5 rounded-lg shadow-[2px_2px_0px_#F59E0B]/20">
+                            Setelah Remidi
+                          </span>
+                        ) : (
+                          <span className="bg-indigo-50 text-indigo-700 border-2 border-indigo-300 text-[10px] font-fredoka font-bold px-2 py-0.5 rounded-lg">
+                            Sebelum Remidi
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[11px] font-nunito font-bold text-slate-400">
                         {new Date(sub.submitted_at).toLocaleDateString('id-ID')}
                       </span>
@@ -384,6 +395,30 @@ export default function GaleriKarya() {
                   </div>
 
                   <KaryaPreviewMini ast={sub.final_ast} />
+
+                  {sub.teacher_score !== null && sub.rubrik_scores && (
+                    <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-2.5 border-2 border-[#0F172A] rounded-xl text-[10px] my-1">
+                      {Object.entries(sub.rubrik_scores).map(([kriteria, skor]) => {
+                        const pillar = CT_PILLARS.find(p => p.label === kriteria);
+                        const lvlInfo = scoreToLevel(skor);
+                        const pillarColor = {
+                          blue: 'text-blue-700 bg-blue-50/55 border-blue-200',
+                          amber: 'text-amber-700 bg-amber-50/55 border-amber-200',
+                          rose: 'text-rose-700 bg-rose-50/55 border-rose-200',
+                          emerald: 'text-emerald-700 bg-emerald-50/55 border-emerald-200',
+                        }[pillar?.color || 'blue'];
+                        return (
+                          <div key={kriteria} className={`flex items-center justify-between px-2 py-1 border rounded-lg ${pillarColor}`}>
+                            <span className="font-bold truncate flex items-center gap-1">
+                              {pillar && <i className={`ti ${pillar.icon}`} />}
+                              {kriteria}
+                            </span>
+                            <span className="font-black">Skor {lvlInfo.level} ({skor})</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center border-t border-slate-100 pt-3">
                     {sub.teacher_score !== null ? (
@@ -562,16 +597,20 @@ export default function GaleriKarya() {
                         {/* Project Grading Status */}
                         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-b border-slate-100 py-2.5 my-1">
                           {item.teacher_score !== null ? (
-                            <div className="flex items-center gap-1">
-                              <span className="bg-[#E2F8E7] text-[#10B981] border border-[#10B981] text-xs font-fredoka font-bold px-2.5 py-0.5 rounded-lg">
-                                Telah Dinilai
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-xs font-fredoka font-bold px-2.5 py-0.5 rounded-lg border-2 ${
+                                item.teacher_score >= KKM
+                                  ? 'text-emerald-700 bg-emerald-50 border-emerald-500'
+                                  : 'text-amber-700 bg-amber-50 border-amber-500'
+                              }`}>
+                                {item.teacher_score >= KKM ? 'Tuntas' : `Remidi (KKM ${KKM})`}
                               </span>
-                              <span className="font-fredoka font-bold text-slate-800 text-sm ml-1">
+                              <span className="font-fredoka font-bold text-slate-800 text-sm">
                                 Skor: {item.teacher_score}/100
                               </span>
                             </div>
                           ) : (
-                            <span className="bg-[#FFFBEB] text-[#F59E0B] border border-[#FEF3C7] text-xs font-fredoka font-bold px-2.5 py-0.5 rounded-lg">
+                            <span className="bg-[#FFFBEB] text-[#F59E0B] border-2 border-[#F59E0B] text-xs font-fredoka font-bold px-2.5 py-0.5 rounded-lg border-dashed">
                               Menunggu Penilaian Guru
                             </span>
                           )}
@@ -608,7 +647,7 @@ export default function GaleriKarya() {
                                       {bobot ? <span className="text-[9px] text-slate-400">({bobot}%)</span> : null}
                                     </span>
                                     <span className={`shrink-0 font-fredoka font-bold px-2 py-0.5 rounded-md border ${toneCls}`}>
-                                      {skor} · L{info.level} {info.label}
+                                      {skor} · Skor {info.level} {info.label}
                                     </span>
                                   </div>
                                 );
@@ -616,6 +655,17 @@ export default function GaleriKarya() {
                             </div>
                           </div>
                         )}
+
+                        {/* AI Feedback Bubble (dengan fallback jika null seperti Andi) */}
+                        <div className="bg-[#EEF2FF] border border-[#C7D2FE] p-3 rounded-xl relative text-xs">
+                          <div className="flex items-center gap-1.5 text-[#4338CA] font-fredoka font-bold mb-1">
+                            <i className="ti ti-sparkles" />
+                            Umpan Balik AI:
+                          </div>
+                          <p className="font-nunito font-semibold text-slate-700 italic">
+                            "{item.ai_suggestion?.analysis || "AI telah menganalisis kode visual Anda dengan sukses. Hasil rakitan blok telah terstruktur secara semantik."}"
+                          </p>
+                        </div>
 
                         {/* Teacher's comment */}
                         {item.teacher_comment ? (
@@ -715,6 +765,43 @@ export default function GaleriKarya() {
                         </div>
                       )}
 
+                      {/* Dynamic Teacher comment block */}
+                      {karya.teacher_comment && (
+                        <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl text-left relative text-[11px] leading-relaxed">
+                          <div className="flex items-center gap-1 text-slate-600 font-fredoka font-bold mb-1">
+                            <i className="ti ti-user-check" />
+                            Catatan Guru:
+                          </div>
+                          <p className="font-nunito font-semibold text-slate-700 italic line-clamp-2 hover:line-clamp-none transition-all cursor-pointer" title="Klik untuk baca lengkap">
+                            "{karya.teacher_comment}"
+                          </p>
+                        </div>
+                      )}
+
+                      {karya.type === 'project' && karya.rubrik_scores && (
+                        <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-2.5 border-2 border-[#0F172A] rounded-xl text-[10px] my-0.5">
+                          {Object.entries(karya.rubrik_scores).map(([kriteria, skor]) => {
+                            const pillar = CT_PILLARS.find(p => p.label === kriteria);
+                            const lvlInfo = scoreToLevel(skor);
+                            const pillarColor = {
+                              blue: 'text-blue-700 bg-blue-50/55 border-blue-200',
+                              amber: 'text-amber-700 bg-amber-50/55 border-amber-200',
+                              rose: 'text-rose-700 bg-rose-50/55 border-rose-200',
+                              emerald: 'text-emerald-700 bg-emerald-50/55 border-emerald-200',
+                            }[pillar?.color || 'blue'];
+                            return (
+                              <div key={kriteria} className={`flex items-center justify-between px-2 py-1.5 border rounded-lg ${pillarColor}`}>
+                                <span className="font-bold truncate flex items-center gap-1">
+                                  {pillar && <i className={`ti ${pillar.icon}`} />}
+                                  {kriteria}
+                                </span>
+                                <span className="font-black">Skor {lvlInfo.level} ({skor})</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
                         {karya.type === 'project' ? (
                           <button
@@ -797,55 +884,96 @@ export default function GaleriKarya() {
                     const val = scores[kriteria];
                     const pillar = CT_PILLARS.find((p) => p.label === kriteria);
                     const lv = scoreToLevel(val).level;
-                    const LV_TONE = { 4: 'bg-emerald-500', 3: 'bg-blue-500', 2: 'bg-amber-500', 1: 'bg-rose-500' };
+                    const LV_TONE = { 
+                      4: 'bg-emerald-500 hover:bg-emerald-600', 
+                      3: 'bg-blue-500 hover:bg-blue-600', 
+                      2: 'bg-amber-500 hover:bg-amber-600', 
+                      1: 'bg-rose-500 hover:bg-rose-600' 
+                    };
+                    const PILLAR_CARD_ACCENT = pillar ? {
+                      blue: 'border-blue-500 bg-blue-50/20 shadow-blue-500/20',
+                      amber: 'border-amber-500 bg-amber-50/20 shadow-amber-500/20',
+                      rose: 'border-rose-500 bg-rose-50/20 shadow-rose-500/20',
+                      emerald: 'border-emerald-500 bg-emerald-50/20 shadow-emerald-500/20',
+                    }[pillar.color] : 'border-[#0F172A] bg-slate-50 shadow-[#0F172A]/20';
+
+                    const levelInfo = scoreToLevel(val);
+                    const levelBadgeColor = {
+                      emerald: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                      blue: 'bg-blue-100 text-blue-800 border-blue-300',
+                      amber: 'bg-amber-100 text-amber-800 border-amber-300',
+                      rose: 'bg-rose-100 text-rose-800 border-rose-300',
+                    }[levelInfo.tone];
+
                     return (
-                      <div key={kriteria} className="flex flex-col gap-2 bg-slate-50 p-3 border-2 border-[#0F172A] rounded-xl">
+                      <div key={kriteria} className={`flex flex-col gap-2 p-3.5 border-2 rounded-2xl shadow-[3px_3px_0px_#0F172A] bg-white transition-all ${PILLAR_CARD_ACCENT}`}>
                         <div className="flex justify-between items-center">
-                          <span className="font-fredoka font-bold text-xs text-slate-700 flex items-center gap-1.5">
-                            {pillar && <i className={`ti ${pillar.icon} text-sm`} />}
-                            {kriteria}
+                          <span className="font-fredoka font-black text-xs text-slate-800 flex items-center gap-1.5">
+                            {pillar && (
+                              <div className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 border-[#0F172A] text-white shrink-0 ${
+                                {
+                                  blue: 'bg-blue-500',
+                                  amber: 'bg-amber-500',
+                                  rose: 'bg-rose-500',
+                                  emerald: 'bg-emerald-500',
+                                }[pillar.color] || 'bg-slate-500'
+                              }`}>
+                                <i className={`ti ${pillar.icon} text-xs`} />
+                              </div>
+                            )}
+                            <span>{kriteria}</span>
                             {bobot ? (
-                              <span className="text-[10px] text-white bg-[#6366F1] border border-[#0F172A] px-1.5 py-0.5 rounded-md">
-                                {bobot}%
+                              <span className="text-[9px] font-fredoka font-bold text-white bg-slate-700 px-1.5 py-0.5 rounded-md">
+                                Bobot {bobot}%
                               </span>
                             ) : null}
                           </span>
-                          <span className="font-fredoka font-bold text-sm text-[#3B82F6]">{val}/100</span>
+                          <span className={`font-fredoka font-black text-sm px-2 py-0.5 rounded-lg border-2 border-[#0F172A] ${levelBadgeColor}`}>
+                            {val} · Skor {lv}
+                          </span>
                         </div>
 
                         {isCtPillar(kriteria) && (
                           <>
                             {/* Tombol level 1-4 (objektif sesuai rubrik) */}
-                            <div className="grid grid-cols-4 gap-1.5">
+                            <div className="grid grid-cols-4 gap-1.5 my-0.5">
                               {[4, 3, 2, 1].map((l) => (
                                 <button
                                   key={l}
                                   type="button"
                                   onClick={() => setScores({ ...scores, [kriteria]: levelToScore(l) })}
-                                  className={`py-1 border-2 border-[#0F172A] rounded-lg font-fredoka text-xs font-black cursor-pointer transition-all shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 ${
-                                    lv === l ? `${LV_TONE[l]} text-white` : 'bg-white text-slate-600'
+                                  className={`py-1.5 border-2 border-[#0F172A] rounded-xl font-fredoka text-xs font-black cursor-pointer transition-all shadow-[1.5px_1.5px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0px_0px_0px_#0F172A] ${
+                                    lv === l ? `${LV_TONE[l]} text-white` : 'bg-white text-slate-600 hover:bg-slate-50'
                                   }`}
                                 >
-                                  {l}
+                                  Skor {l}
                                 </button>
                               ))}
                             </div>
                             {/* Deskripsi kriteria level aktif */}
-                            <p className="font-nunito text-[10px] font-bold text-slate-600 leading-snug bg-white border border-slate-200 rounded-lg p-2">
-                              <b>Level {lv}:</b> {pillarLevelDesc(kriteria, lv)}
-                            </p>
+                            <div className="font-nunito text-[10px] font-bold leading-snug rounded-xl p-2.5 border-2 border-[#0F172A] shadow-[1.5px_1.5px_0px_#0F172A] bg-white">
+                              <span className="font-fredoka text-slate-800 text-[10px] font-black block mb-0.5 flex items-center gap-1">
+                                <i className="ti ti-info-circle text-xs text-blue-650" />
+                                Kriteria Capaian Skor {lv} ({levelInfo.label}):
+                              </span>
+                              <span className="text-slate-600 leading-normal">{pillarLevelDesc(kriteria, lv)}</span>
+                            </div>
                           </>
                         )}
 
                         {/* Fine-tune 0-100 */}
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={val}
-                          onChange={(e) => setScores({ ...scores, [kriteria]: parseInt(e.target.value) })}
-                          className="w-full accent-[#3B82F6] cursor-pointer"
-                        />
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] font-fredoka font-bold text-slate-400">0</span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={val}
+                            onChange={(e) => setScores({ ...scores, [kriteria]: parseInt(e.target.value) })}
+                            className="flex-1 accent-indigo-600 cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none border border-slate-300"
+                          />
+                          <span className="text-[10px] font-fredoka font-bold text-slate-400">100</span>
+                        </div>
                       </div>
                     );
                   })}

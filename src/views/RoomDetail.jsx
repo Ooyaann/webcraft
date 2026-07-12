@@ -45,6 +45,11 @@ export default function RoomDetail() {
   const [judul, setJudul] = useState('');
   const [urutan, setUrutan] = useState(1);
   const [isPublished, setIsPublished] = useState(true);
+  const [tipeAktivitas, setTipeAktivitas] = useState('learning');
+  const [weightDecomp, setWeightDecomp] = useState(25);
+  const [weightPattern, setWeightPattern] = useState(25);
+  const [weightAbstract, setWeightAbstract] = useState(25);
+  const [weightAlgo, setWeightAlgo] = useState(25);
 
   // CBL Engage fields
   const [bigIdea, setBigIdea] = useState('Coding & Web');
@@ -197,10 +202,11 @@ export default function RoomDetail() {
     setGuidingQuestions([]);
     setReflectionQuestions([]);
     setMateriList([]);
+    setTipeAktivitas('learning');
     setShowAddModal(true);
   };
 
-  const handleOpenEditModal = (pert) => {
+  const handleOpenEditModal = async (pert) => {
     setEditingPert(pert);
     setJudul(pert.judul);
     setUrutan(pert.urutan);
@@ -214,6 +220,37 @@ export default function RoomDetail() {
     setGuidingQuestions(pert.guiding_questions_json || []);
     setReflectionQuestions(pert.reflection_questions_json || []);
     setMateriList(pert.materi_list_json || []);
+    
+    // Default fallback
+    setTipeAktivitas('learning');
+    setWeightDecomp(25);
+    setWeightPattern(25);
+    setWeightAbstract(25);
+    setWeightAlgo(25);
+
+    try {
+      const tasksRes = await api.get(`/pertemuan/${pert.id}/tasks`);
+      const pTask = tasksRes.data?.project_tasks?.[0];
+      const lTask = tasksRes.data?.learning_tasks?.[0];
+      if (pTask) {
+        setTipeAktivitas('project');
+        if (pTask.rubrik_json && Array.isArray(pTask.rubrik_json)) {
+          const d = pTask.rubrik_json.find(r => r.name === 'Dekomposisi')?.bobot ?? 25;
+          const p = pTask.rubrik_json.find(r => r.name === 'Pengenalan Pola')?.bobot ?? 25;
+          const a = pTask.rubrik_json.find(r => r.name === 'Abstraksi')?.bobot ?? 25;
+          const al = pTask.rubrik_json.find(r => r.name === 'Algoritma')?.bobot ?? 25;
+          setWeightDecomp(d);
+          setWeightPattern(p);
+          setWeightAbstract(a);
+          setWeightAlgo(al);
+        }
+      } else if (lTask) {
+        setTipeAktivitas('learning');
+      }
+    } catch (err) {
+      console.error("Gagal mengambil data tugas pertemuan:", err);
+    }
+    
     setShowEditModal(true);
   };
 
@@ -277,11 +314,29 @@ export default function RoomDetail() {
   const handleCreatePertemuan = async (e) => {
     e.preventDefault();
     if (!judul.trim()) return;
+
+    // Validasi bobot harus 100 jika tipe proyek
+    if (tipeAktivitas === 'project') {
+      const sum = parseInt(weightDecomp) + parseInt(weightPattern) + parseInt(weightAbstract) + parseInt(weightAlgo);
+      if (sum !== 100) {
+        toast.error(`Gagal menyimpan: Total bobot harus bernilai 100%! (Saat ini: ${sum}%)`);
+        return;
+      }
+    }
+
     setIsActionLoading(true);
+
+    const rubrikPayload = [
+      { name: 'Dekomposisi', bobot: parseInt(weightDecomp) },
+      { name: 'Pengenalan Pola', bobot: parseInt(weightPattern) },
+      { name: 'Abstraksi', bobot: parseInt(weightAbstract) },
+      { name: 'Algoritma', bobot: parseInt(weightAlgo) }
+    ];
 
     const payload = {
       urutan: parseInt(urutan),
       judul: judul.trim(),
+      tipe_aktivitas: tipeAktivitas,
       cbl_engage_json: {
         big_idea: bigIdea,
         essential_question: essentialQuestion.trim(),
@@ -289,7 +344,8 @@ export default function RoomDetail() {
       },
       guiding_questions_json: guidingQuestions,
       reflection_questions_json: reflectionQuestions,
-      materi_list_json: materiList
+      materi_list_json: materiList,
+      ...(tipeAktivitas === 'project' ? { rubrik_json: rubrikPayload } : {})
     };
 
     try {
@@ -307,7 +363,24 @@ export default function RoomDetail() {
   const handleEditPertemuan = async (e) => {
     e.preventDefault();
     if (!judul.trim() || !editingPert) return;
+
+    // Validasi bobot harus 100 jika tipe proyek
+    if (tipeAktivitas === 'project') {
+      const sum = parseInt(weightDecomp) + parseInt(weightPattern) + parseInt(weightAbstract) + parseInt(weightAlgo);
+      if (sum !== 100) {
+        toast.error(`Gagal menyimpan: Total bobot harus bernilai 100%! (Saat ini: ${sum}%)`);
+        return;
+      }
+    }
+
     setIsActionLoading(true);
+
+    const rubrikPayload = [
+      { name: 'Dekomposisi', bobot: parseInt(weightDecomp) },
+      { name: 'Pengenalan Pola', bobot: parseInt(weightPattern) },
+      { name: 'Abstraksi', bobot: parseInt(weightAbstract) },
+      { name: 'Algoritma', bobot: parseInt(weightAlgo) }
+    ];
 
     const payload = {
       judul: judul.trim(),
@@ -320,7 +393,8 @@ export default function RoomDetail() {
       },
       guiding_questions_json: guidingQuestions,
       reflection_questions_json: reflectionQuestions,
-      materi_list_json: materiList
+      materi_list_json: materiList,
+      ...(tipeAktivitas === 'project' ? { rubrik_weights_json: rubrikPayload } : {})
     };
 
     try {
@@ -328,8 +402,8 @@ export default function RoomDetail() {
       setShowEditModal(false);
       loadData();
     } catch (err) {
-      console.error("Gagal mengupdate pertemuan:", err);
-      toast.error("Terjadi kesalahan saat menyimpan perubahan.");
+      console.error("Gagal mengedit pertemuan:", err);
+      toast.error("Terjadi kesalahan saat memperbarui pertemuan.");
     } finally {
       setIsActionLoading(false);
     }
@@ -917,6 +991,114 @@ export default function RoomDetail() {
                 </div>
               </div>
 
+              {/* Activity Type Selector */}
+              {showAddModal && (
+                <div className="flex flex-col gap-2 bg-slate-50 p-4 border-2 border-[#0F172A] rounded-xl">
+                  <label className="font-fredoka font-bold text-slate-700 text-xs block">Tipe Penilaian / Aktivitas Praktik:</label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setTipeAktivitas('learning')}
+                      className={`flex-1 py-3 px-4 border-2 border-[#0F172A] rounded-xl font-fredoka font-bold text-xs shadow-[2.5px_2.5px_0px_#0F172A] transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        tipeAktivitas === 'learning'
+                          ? 'bg-blue-500 text-white shadow-none translate-x-[1px] translate-y-[1px]'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <i className="ti ti-school text-sm" />
+                      Misi Belajar (Validasi AI Otomatis)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTipeAktivitas('project')}
+                      className={`flex-1 py-3 px-4 border-2 border-[#0F172A] rounded-xl font-fredoka font-bold text-xs shadow-[2.5px_2.5px_0px_#0F172A] transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        tipeAktivitas === 'project'
+                          ? 'bg-pink-500 text-white shadow-none translate-x-[1px] translate-y-[1px]'
+                          : 'bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <i className="ti ti-device-laptop text-sm" />
+                      Proyek Kreatif (Penilaian Guru)
+                    </button>
+                  </div>
+                  <p className="font-nunito text-[10px] font-bold text-slate-400 mt-1">
+                    {tipeAktivitas === 'learning' 
+                      ? 'Siswa akan menyelesaikan misi bertahap dengan panduan visual dan koreksi struktur HTML/CSS otomatis oleh AI.'
+                      : 'Siswa akan membuat proyek bebas/kreatif (tanpa aturan validasi otomatis). Anda akan menilai secara manual berdasarkan 4 pilar CT.'}
+                  </p>
+                </div>
+              )}
+
+              {/* Rubric Weights Editor (only for Project tasks) */}
+              {tipeAktivitas === 'project' && (
+                <div className="border-2 border-[#0F172A] p-4 rounded-xl bg-pink-50/20 flex flex-col gap-3">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-1.5 flex-wrap gap-2">
+                    <h4 className="font-fredoka text-xs font-bold text-pink-700 uppercase tracking-wider flex items-center gap-1">
+                      <i className="ti ti-percentage" />
+                      Pengaturan Bobot Rubrik CT
+                    </h4>
+                    <span className={`text-[10px] font-fredoka font-bold px-2 py-0.5 border-2 border-[#0F172A] rounded-lg ${
+                      (parseInt(weightDecomp || 0) + parseInt(weightPattern || 0) + parseInt(weightAbstract || 0) + parseInt(weightAlgo || 0) === 100)
+                        ? 'bg-emerald-100 text-emerald-850 border-emerald-400'
+                        : 'bg-red-50 text-red-800 border-red-400 animate-pulse'
+                    }`}>
+                      Total: {parseInt(weightDecomp || 0) + parseInt(weightPattern || 0) + parseInt(weightAbstract || 0) + parseInt(weightAlgo || 0)}% (Harus 100%)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="font-fredoka font-bold text-slate-700 text-[10px] block mb-1">Dekomposisi (%):</label>
+                      <input
+                        type="number"
+                        value={weightDecomp}
+                        onChange={(e) => setWeightDecomp(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-full neo-input text-xs font-semibold py-1 px-2"
+                        min={0}
+                        max={100}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="font-fredoka font-bold text-slate-700 text-[10px] block mb-1">Pengenalan Pola (%):</label>
+                      <input
+                        type="number"
+                        value={weightPattern}
+                        onChange={(e) => setWeightPattern(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-full neo-input text-xs font-semibold py-1 px-2"
+                        min={0}
+                        max={100}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="font-fredoka font-bold text-slate-700 text-[10px] block mb-1">Abstraksi (%):</label>
+                      <input
+                        type="number"
+                        value={weightAbstract}
+                        onChange={(e) => setWeightAbstract(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-full neo-input text-xs font-semibold py-1 px-2"
+                        min={0}
+                        max={100}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="font-fredoka font-bold text-slate-700 text-[10px] block mb-1">Algoritma (%):</label>
+                      <input
+                        type="number"
+                        value={weightAlgo}
+                        onChange={(e) => setWeightAlgo(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-full neo-input text-xs font-semibold py-1 px-2"
+                        min={0}
+                        max={100}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* CBL Engage Section */}
               <div className="border-2 border-[#0F172A] p-4 rounded-xl bg-slate-50 flex flex-col gap-4">
                 <h4 className="font-fredoka text-xs font-bold text-[#0F172A] uppercase tracking-wider border-b border-slate-200 pb-1.5 flex items-center gap-1">
@@ -1148,21 +1330,33 @@ export default function RoomDetail() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 px-5 pt-3">
-              {[['rules', 'Aturan Validasi', 'ti-list-check'], ['ct', 'Konten CT Journey', 'ti-brain']].map(([key, label, icon]) => (
-                <button
-                  key={key}
-                  onClick={() => setRulesTab(key)}
-                  className={`px-3 py-2 font-fredoka text-[11px] font-bold flex items-center gap-1.5 border-b-2 cursor-pointer transition-colors ${rulesTab === key ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-                >
-                  <i className={`ti ${icon}`} /> {label}
-                </button>
-              ))}
-            </div>
+            {rulesTaskId !== null && (
+              <div className="flex gap-1 px-5 pt-3">
+                {[['rules', 'Aturan Validasi', 'ti-list-check'], ['ct', 'Konten CT Journey', 'ti-brain']].map(([key, label, icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setRulesTab(key)}
+                    className={`px-3 py-2 font-fredoka text-[11px] font-bold flex items-center gap-1.5 border-b-2 cursor-pointer transition-colors ${rulesTab === key ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <i className={`ti ${icon}`} /> {label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto p-5 space-y-3 border-t-2 border-slate-100">
               {rulesLoading ? (
                 <div className="text-center py-8 text-slate-500 font-bold text-sm">Memuat...</div>
+              ) : rulesTaskId === null ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+                  <div className="w-16 h-16 bg-amber-50 border-2 border-amber-500 text-amber-600 rounded-2xl flex items-center justify-center shadow-[2px_2px_0px_#0F172A]">
+                    <i className="ti ti-device-laptop text-3xl animate-bounce-slow" />
+                  </div>
+                  <h4 className="font-fredoka text-base font-bold text-slate-800">Pertemuan Tipe Proyek Kreatif</h4>
+                  <p className="font-nunito text-xs text-slate-500 font-semibold max-w-md leading-relaxed">
+                    Pertemuan ini dirancang khusus untuk pengerjaan <strong>Proyek Kreatif</strong> (tantangan portofolio/karya). Karena tipe tugas ini tidak memerlukan validasi kode otomatis, Anda tidak perlu mengonfigurasi aturan validasi atau urutan langkah CT. Siswa akan dinilai secara manual oleh Anda berdasarkan rubrik 4 pilar CT.
+                  </p>
+                </div>
               ) : rulesTab === 'ct' ? (
                 <>
                   <div>
@@ -1226,37 +1420,48 @@ export default function RoomDetail() {
                   </div>
                 ))
               )}
-              {!rulesLoading && rulesTab === 'rules' && (
+              {!rulesLoading && rulesTaskId !== null && rulesTab === 'rules' && (
                 <button onClick={addRule} className="w-full border-2 border-dashed border-slate-300 rounded-xl py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 cursor-pointer flex items-center justify-center gap-1"><i className="ti ti-plus" /> Tambah Aturan</button>
               )}
             </div>
 
             <div className="flex justify-end gap-3 px-6 py-4.5 border-t-4 border-[#0F172A] bg-white rounded-b-[24px]">
-              <button
-                onClick={() => setShowRulesModal(false)}
-                disabled={rulesSaving}
-                className="px-5 py-2.5 border-4 border-[#0F172A] bg-[#F1F5F9] hover:bg-[#E2E8F0] text-slate-700 font-fredoka font-bold rounded-xl text-xs md:text-sm shadow-[3px_3px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleSaveRules}
-                disabled={rulesSaving || rulesLoading}
-                className={`px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-4 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-fredoka font-bold rounded-xl text-xs md:text-sm hover:-translate-y-0.5 active:translate-y-[0.5px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer flex items-center gap-1.5 ${(rulesSaving || rulesLoading) ? 'opacity-50 cursor-not-allowed shadow-none transform-none active:translate-y-0' : ''
-                  }`}
-              >
-                {rulesSaving ? (
-                  <>
-                    <i className="ti ti-loader animate-spin text-sm" />
-                    <span>Menyimpan...</span>
-                  </>
-                ) : (
-                  <>
-                    <i className="ti ti-circle-check" />
-                    <span>Simpan Pengaturan</span>
-                  </>
-                )}
-              </button>
+              {rulesTaskId !== null ? (
+                <>
+                  <button
+                    onClick={() => setShowRulesModal(false)}
+                    disabled={rulesSaving}
+                    className="px-5 py-2.5 border-4 border-[#0F172A] bg-[#F1F5F9] hover:bg-[#E2E8F0] text-slate-700 font-fredoka font-bold rounded-xl text-xs md:text-sm shadow-[3px_3px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[0.5px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleSaveRules}
+                    disabled={rulesSaving || rulesLoading}
+                    className={`px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-4 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-fredoka font-bold rounded-xl text-xs md:text-sm hover:-translate-y-0.5 active:translate-y-[0.5px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer flex items-center gap-1.5 ${(rulesSaving || rulesLoading) ? 'opacity-50 cursor-not-allowed shadow-none transform-none active:translate-y-0' : ''
+                      }`}
+                  >
+                    {rulesSaving ? (
+                      <>
+                        <i className="ti ti-loader animate-spin text-sm" />
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="ti ti-circle-check" />
+                        <span>Simpan Pengaturan</span>
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setShowRulesModal(false)}
+                  className="px-5 py-2.5 bg-[#0F172A] text-white border-4 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-fredoka font-bold rounded-xl text-xs md:text-sm hover:-translate-y-0.5 active:translate-y-[0.5px] active:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer"
+                >
+                  Tutup
+                </button>
+              )}
             </div>
           </div>
         </div>,

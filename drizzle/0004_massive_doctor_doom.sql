@@ -1,0 +1,1 @@
+ALTER TABLE "project_submissions" ADD COLUMN "is_remedial" boolean DEFAULT false NOT NULL;

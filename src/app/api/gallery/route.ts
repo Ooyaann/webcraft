@@ -139,6 +139,8 @@ export const GET = handler(async (req) => {
       // graded membedakan "belum dinilai" dari nilai 0 sungguhan
       graded: sub.teacher_score !== null,
       score: sub.teacher_score ?? 0,
+      rubrik_scores: sub.rubrik_scores_json,
+      teacher_comment: sub.teacher_comment,
     });
   }
 

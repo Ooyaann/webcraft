@@ -180,6 +180,7 @@ export const projectSubmissions = pgTable("project_submissions", {
   teacher_comment: text(),
   rubrik_scores_json: jsonb().$type<Record<string, number>>(), // {kriteria: score}
   is_published_to_gallery: boolean().notNull().default(false),
+  is_remedial: boolean().notNull().default(false), // Penanda setelah remidi
   submitted_at: ts().defaultNow().notNull(),
   graded_at: ts(),
 }, (t) => [

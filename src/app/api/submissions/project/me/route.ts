@@ -29,6 +29,7 @@ export const GET = handler(async (req) => {
       rubrik_scores: sub.rubrik_scores_json,
       rubrik: task?.rubrik_json ?? null,
       is_published_to_gallery: sub.is_published_to_gallery,
+      is_remedial: sub.is_remedial,
       submitted_at: sub.submitted_at,
     })),
   );

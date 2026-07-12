@@ -13,6 +13,8 @@ type Ctx = { params: Promise<{ roomId: string }> };
 const pertemuanCreateSchema = z.object({
   urutan: z.number().int(),
   judul: z.string().min(1).max(200),
+  tipe_aktivitas: z.enum(["learning", "project"]).optional().default("learning"),
+  rubrik_json: z.array(z.record(z.string(), z.unknown())).nullish(),
   cbl_engage_json: z.record(z.string(), z.unknown()).nullish(),
   guiding_questions_json: z.array(z.string()).nullish(),
   reflection_questions_json: z.array(z.string()).nullish(),
@@ -83,8 +85,7 @@ export const POST = handler<Ctx>(async (req, ctx) => {
 
   const { rules, studiKasus } = seedContent(body.judul);
 
-  // Transaksi: pertemuan + kedua task auto-seed harus atomik (paritas
-  // commit-per-request FastAPI lama) — jangan sampai ada pertemuan tanpa task.
+  // Transaksi: pertemuan + task auto-seed harus atomik — jangan sampai ada pertemuan tanpa task.
   const pert = await db.transaction(async (tx) => {
     const [created] = await tx
       .insert(pertemuan)
@@ -101,21 +102,24 @@ export const POST = handler<Ctx>(async (req, ctx) => {
       })
       .returning();
 
-    await tx.insert(learningTasks).values({
-      id: randomUUID(),
-      pertemuan_id: created.id,
-      judul: body.judul,
-      validator_rules_json: rules,
-      max_attempts_before_ai_hint: 4,
-    });
-    await tx.insert(projectTasks).values({
-      id: randomUUID(),
-      pertemuan_id: created.id,
-      judul: `Proyek: ${body.judul}`,
-      studi_kasus: studiKasus,
-      // Rubrik 4 pilar CT (Tabel 5), 25% tiap pilar — objektif & sesuai proposal.
-      rubrik_json: CT_RUBRIC_CRITERIA,
-    });
+    if (body.tipe_aktivitas === "learning") {
+      await tx.insert(learningTasks).values({
+        id: randomUUID(),
+        pertemuan_id: created.id,
+        judul: body.judul,
+        validator_rules_json: rules,
+        max_attempts_before_ai_hint: 4,
+      });
+    } else {
+      await tx.insert(projectTasks).values({
+        id: randomUUID(),
+        pertemuan_id: created.id,
+        judul: `Proyek: ${body.judul}`,
+        studi_kasus: studiKasus,
+        // Rubrik kustom atau default 4 pilar CT (Tabel 5), 25% tiap pilar.
+        rubrik_json: body.rubrik_json ?? CT_RUBRIC_CRITERIA,
+      });
+    }
     return created;
   });
 

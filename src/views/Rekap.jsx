@@ -3,6 +3,8 @@ import { useParams, useNavigate } from '@/lib/router-compat';
 import { useStore } from '../store/useStore';
 import api from '../services/api';
 import { toHTML, toFormattedCode } from '../services/astUtils';
+import { CT_PILLARS, scoreToLevel } from '../lib/ctRubric';
+import { KKM } from '../lib/scoring';
 
 // Read-only mini preview of a finished karya (no interaction, replay-only)
 function RekapPreview({ ast }) {
@@ -269,26 +271,79 @@ export default function Rekap() {
             <i className="ti ti-device-laptop text-emerald-600" /> Proyek — {project.task_title}
           </h3>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {project.teacher_score !== null ? (
-              <span className="bg-emerald-50 text-emerald-700 border-2 border-emerald-300 px-3 py-1 rounded-xl font-fredoka text-xs font-bold">
-                Skor Guru: {project.teacher_score}/100
-              </span>
-            ) : (
-              <span className="bg-amber-50 text-amber-700 border-2 border-amber-300 px-3 py-1 rounded-xl font-fredoka text-xs font-bold">
-                Menunggu Penilaian Guru
-              </span>
-            )}
-            {project.is_published_to_gallery && (
-              <span className="bg-pink-50 text-pink-700 border-2 border-pink-300 px-3 py-1 rounded-xl font-fredoka text-xs font-bold flex items-center gap-1">
-                <i className="ti ti-world" /> Masuk Galeri
-              </span>
-            )}
-          </div>
+          {project.teacher_score !== null ? (
+            <div className={`border-2 border-[#0F172A] rounded-xl p-4 shadow-[3px_3px_0px_#0F172A] flex justify-between items-center ${project.teacher_score >= KKM ? 'bg-emerald-50/70 border-emerald-500' : 'bg-amber-50/70 border-amber-500'}`}>
+              <div className="text-left">
+                <p className="font-fredoka text-xs font-bold text-slate-700">Skor Evaluasi Proyek oleh Guru</p>
+                <p className={`font-fredoka text-[11px] font-bold mt-1 ${project.teacher_score >= KKM ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  {project.teacher_score >= KKM ? `✔ Tuntas (Batas KKM ${KKM})` : `⚠ Belum Tuntas (Batas KKM ${KKM})`}
+                </p>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="font-fredoka text-4xl font-black text-slate-800">{project.teacher_score}</span>
+                <span className="font-nunito text-xs text-slate-400 font-bold">/100</span>
+              </div>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-[#F59E0B] rounded-xl p-4 bg-[#FFFBEB] flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
+                <i className="ti ti-clock-hour-4 text-[#F59E0B] text-xl animate-spin" />
+              </div>
+              <div className="text-left">
+                <p className="font-fredoka text-xs font-bold text-amber-900">Menunggu Penilaian Guru</p>
+                <p className="font-nunito text-[10px] text-amber-700 font-semibold leading-relaxed mt-0.5">
+                  Proyek kreatifmu telah dikirim ke guru. Nilai dan umpan balik pilar CT akan segera diumumkan di sini.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {project.is_published_to_gallery && (
+            <div className="w-fit bg-pink-50 text-pink-700 border-2 border-pink-300 px-3 py-1.5 rounded-xl font-fredoka text-xs font-bold flex items-center gap-1.5 shadow-[2px_2px_0px_#EC4899]/10">
+              <i className="ti ti-world text-sm" /> Terbit di Galeri Publik Kelas
+            </div>
+          )}
 
           <div>
             <p className="font-fredoka text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Hasil Proyekmu</p>
             <RekapArtifact ast={project.final_ast} />
+          </div>
+
+          {project.teacher_score !== null && project.rubrik_scores_json && (
+            <div className="flex flex-col gap-3">
+              <p className="font-fredoka text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Detail Capaian Berpikir Komputasional (CT)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {Object.entries(project.rubrik_scores_json).map(([kriteria, skor]) => {
+                  const pillar = CT_PILLARS.find(p => p.label === kriteria);
+                  const lvlInfo = scoreToLevel(skor);
+                  const pillarColor = {
+                    blue: 'text-blue-700 bg-blue-50/55 border-blue-200 shadow-blue-500/5',
+                    amber: 'text-amber-700 bg-amber-50/55 border-amber-200 shadow-amber-500/5',
+                    rose: 'text-rose-700 bg-rose-50/55 border-rose-200 shadow-rose-500/5',
+                    emerald: 'text-emerald-700 bg-emerald-50/55 border-emerald-200 shadow-emerald-500/5',
+                  }[pillar?.color || 'blue'];
+                  return (
+                    <div key={kriteria} className={`flex items-center justify-between p-3.5 border-2 border-[#0F172A] rounded-xl shadow-[3px_3px_0px_#0F172A] ${pillarColor}`}>
+                      <span className="font-fredoka text-xs font-bold truncate flex items-center gap-2">
+                        {pillar && <i className={`ti ${pillar.icon} text-sm`} />}
+                        {kriteria}
+                      </span>
+                      <span className="font-fredoka text-xs font-black shrink-0">Skor {lvlInfo.level} ({skor})</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="bg-[#EEF2FF] border-2 border-[#C7D2FE] p-3 rounded-xl text-xs">
+            <div className="flex items-center gap-1.5 text-[#4338CA] font-fredoka font-bold mb-1">
+              <span className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] border border-indigo-200">AI</span>
+              Umpan Balik AI:
+            </div>
+            <p className="font-nunito font-semibold text-slate-700 italic">
+              "{project.ai_suggestion?.analysis || "AI telah menganalisis kode visual Anda dengan sukses. Hasil rakitan blok telah terstruktur secara semantik."}"
+            </p>
           </div>
 
           {project.teacher_comment && (

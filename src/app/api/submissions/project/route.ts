@@ -74,11 +74,34 @@ export const POST = handler(async (req) => {
     };
   }
 
+  // Cari tahu apakah ini pengumpulan setelah remidi (revisi karena nilai sebelumnya < KKM 70)
+  const [existingSub] = await db
+    .select({
+      teacher_score: projectSubmissions.teacher_score,
+      is_remedial: projectSubmissions.is_remedial
+    })
+    .from(projectSubmissions)
+    .where(
+      and(
+        eq(projectSubmissions.task_id, body.task_id),
+        eq(projectSubmissions.siswa_id, user.id)
+      )
+    )
+    .limit(1);
+
+  const isRemedial = existingSub 
+    ? (existingSub.is_remedial || (existingSub.teacher_score !== null && existingSub.teacher_score < 70))
+    : false;
+
   // Upsert atomik via unique (task_id, siswa_id) — race-safe.
   const updateSet = {
     final_ast_json: body.final_ast,
     ct_session_id: body.ct_session_id ?? null,
     ai_suggestion_json: aiSuggestion,
+    is_remedial: isRemedial,
+    teacher_score: null,      // Reset skor agar dinilai kembali oleh guru
+    teacher_comment: null,    // Reset catatan guru
+    rubrik_scores_json: null, // Reset rincian skor pilar
   };
   const [row] = await db
     .insert(projectSubmissions)
@@ -145,6 +168,7 @@ export const GET = handler(async (req) => {
       teacher_comment: sub.teacher_comment,
       rubrik_scores: sub.rubrik_scores_json,
       is_published_to_gallery: sub.is_published_to_gallery,
+      is_remedial: sub.is_remedial,
       submitted_at: sub.submitted_at,
     })),
   );

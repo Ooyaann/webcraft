@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
-import { pertemuan, rooms } from "@/db/schema";
+import { pertemuan, rooms, projectTasks } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { handler, HttpError, parseBody } from "@/lib/http";
 
@@ -30,6 +30,7 @@ const pertemuanUpdateSchema = z.object({
   guiding_questions_json: z.array(z.string()).nullish(),
   reflection_questions_json: z.array(z.string()).nullish(),
   materi_list_json: z.array(z.record(z.string(), z.unknown())).nullish(),
+  rubrik_weights_json: z.array(z.record(z.string(), z.unknown())).nullish(),
 });
 
 // PUT /api/pertemuan/{pertemuanId} — guru pemilik saja
@@ -58,9 +59,18 @@ export const PUT = handler<Ctx>(async (req, ctx) => {
       ? { materi_list_json: body.materi_list_json }
       : {}),
   };
+
+  const db = getDb();
+  if (body.rubrik_weights_json != null) {
+    await db
+      .update(projectTasks)
+      .set({ rubrik_json: body.rubrik_weights_json })
+      .where(eq(projectTasks.pertemuan_id, pertemuanId));
+  }
+
   if (Object.keys(changes).length === 0) return NextResponse.json(pert);
 
-  const [updated] = await getDb()
+  const [updated] = await db
     .update(pertemuan)
     .set(changes)
     .where(eq(pertemuan.id, pertemuanId))
