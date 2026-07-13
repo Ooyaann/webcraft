@@ -102,21 +102,24 @@ export const POST = handler<Ctx>(async (req, ctx) => {
       })
       .returning();
 
-    await tx.insert(learningTasks).values({
-      id: randomUUID(),
-      pertemuan_id: created.id,
-      judul: body.judul,
-      validator_rules_json: rules,
-      max_attempts_before_ai_hint: 4,
-    });
-    await tx.insert(projectTasks).values({
-      id: randomUUID(),
-      pertemuan_id: created.id,
-      judul: `Proyek: ${body.judul}`,
-      studi_kasus: studiKasus,
-      // Rubrik kustom atau default 4 pilar CT (Tabel 5), 25% tiap pilar.
-      rubrik_json: body.rubrik_json ?? CT_RUBRIC_CRITERIA,
-    });
+    if (body.tipe_aktivitas === "project") {
+      await tx.insert(projectTasks).values({
+        id: randomUUID(),
+        pertemuan_id: created.id,
+        judul: `Proyek: ${body.judul}`,
+        studi_kasus: studiKasus,
+        // Rubrik kustom atau default 4 pilar CT (Tabel 5), 25% tiap pilar.
+        rubrik_json: body.rubrik_json ?? CT_RUBRIC_CRITERIA,
+      });
+    } else {
+      await tx.insert(learningTasks).values({
+        id: randomUUID(),
+        pertemuan_id: created.id,
+        judul: body.judul,
+        validator_rules_json: rules,
+        max_attempts_before_ai_hint: 4,
+      });
+    }
     return created;
   });
 
@@ -139,5 +142,20 @@ export const GET = handler<Ctx>(async (req, ctx) => {
     .from(pertemuan)
     .where(where)
     .orderBy(asc(pertemuan.urutan));
-  return NextResponse.json(list);
+
+  const listWithTypes = await Promise.all(
+    list.map(async (p) => {
+      const [pTask] = await db
+        .select()
+        .from(projectTasks)
+        .where(eq(projectTasks.pertemuan_id, p.id))
+        .limit(1);
+      return {
+        ...p,
+        tipe_aktivitas: pTask ? "project" : "learning",
+      };
+    })
+  );
+
+  return NextResponse.json(listWithTypes);
 });

@@ -123,12 +123,13 @@ describe("alur kelas", () => {
     expect((await res.json()).id).toBe(roomId);
   });
 
-  it("guru membuat pertemuan 'Kartu Profil' → auto-seed learning+project task", async () => {
+  it("guru membuat pertemuan 1 'Kartu Profil' → auto-seed learning task", async () => {
     const { POST } = await import("@/app/api/rooms/[roomId]/pertemuan/route");
     const res = await POST(
       jsonReq(`/api/rooms/${roomId}/pertemuan`, "POST", {
         urutan: 1,
         judul: "Kartu Profil Pribadi",
+        tipe_aktivitas: "learning",
       }, guruToken),
       params({ roomId }),
     );
@@ -144,12 +145,37 @@ describe("alur kelas", () => {
     );
     const tasks = await tasksRes.json();
     expect(tasks.learning_tasks).toHaveLength(1);
-    expect(tasks.project_tasks).toHaveLength(1);
+    expect(tasks.project_tasks).toHaveLength(0);
     learningTaskId = tasks.learning_tasks[0].id;
-    projectTaskId = tasks.project_tasks[0].id;
     // Branch 'profil': 5 aturan validator
     expect(tasks.learning_tasks[0].validator_rules_json).toHaveLength(5);
-    expect(tasks.project_tasks[0].judul).toBe("Proyek: Kartu Profil Pribadi");
+  });
+
+  it("guru membuat pertemuan 2 'Proyek Profil' → auto-seed project task", async () => {
+    const { POST } = await import("@/app/api/rooms/[roomId]/pertemuan/route");
+    const res = await POST(
+      jsonReq(`/api/rooms/${roomId}/pertemuan`, "POST", {
+        urutan: 2,
+        judul: "Proyek Kartu Profil",
+        tipe_aktivitas: "project",
+      }, guruToken),
+      params({ roomId }),
+    );
+    expect(res.status).toBe(200);
+    const pertemuan2Id = (await res.json()).id;
+
+    const { GET } = await import(
+      "@/app/api/pertemuan/[pertemuanId]/tasks/route"
+    );
+    const tasksRes = await GET(
+      getReq(`/api/pertemuan/${pertemuan2Id}/tasks`, siswaToken),
+      params({ pertemuanId: pertemuan2Id }),
+    );
+    const tasks = await tasksRes.json();
+    expect(tasks.learning_tasks).toHaveLength(0);
+    expect(tasks.project_tasks).toHaveLength(1);
+    projectTaskId = tasks.project_tasks[0].id;
+    expect(tasks.project_tasks[0].judul).toBe("Proyek: Proyek Kartu Profil");
   });
 });
 
@@ -564,9 +590,17 @@ describe("rubrik CT: penilaian guru jadi skor CT resmi", () => {
     );
     const grades = await gradesRes.json();
     const andi = grades.find((g: { email: string }) => g.email === "andi@siswa.com");
-    expect(andi.decomposition).toBe(95);
-    expect(andi.algorithm_design).toBe(50);
-    // composite = trunc((95+82+67+50)/4) = 73
-    expect(andi.ct).toBe(73);
+    // Meeting 1 CT (student): decomp=90, pattern=85, abstr=80, algo=88
+    // Meeting 2 CT (teacher rubrik): decomp=95, pattern=82, abstr=67, algo=50
+    // Grades route averages across all meetings:
+    // decomposition = trunc((90+95)/2) = 92
+    // algorithm_design = trunc((88+50)/2) = 69
+    // pattern_recognition = trunc((85+82)/2) = 83
+    // abstraction = trunc((80+67)/2) = 73
+    // composite per meeting: m1=trunc((90+85+80+88)/4)=85, m2=trunc((95+82+67+50)/4)=73
+    // ct = trunc((85+73)/2) = 79
+    expect(andi.decomposition).toBe(92);
+    expect(andi.algorithm_design).toBe(69);
+    expect(andi.ct).toBe(79);
   });
 });

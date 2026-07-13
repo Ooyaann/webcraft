@@ -680,13 +680,15 @@ export default function RoomDetail() {
                             <span className="hidden sm:inline">Kelola</span>
                           </button>
  
-                          <button
-                            onClick={() => handleOpenRulesModal(pert)}
-                            className="px-2 sm:px-3 py-1.5 bg-sky-50 text-sky-700 border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer"
-                          >
-                            <i className="ti ti-list-check text-xs" />
-                            <span className="hidden sm:inline">Aturan</span>
-                          </button>
+                          {pert.tipe_aktivitas === 'learning' && (
+                            <button
+                              onClick={() => handleOpenRulesModal(pert)}
+                              className="px-2 sm:px-3 py-1.5 bg-sky-50 text-sky-700 border-2 border-[#0F172A] font-fredoka text-[10px] font-bold rounded-lg hover:-translate-y-0.5 shadow-[1.5px_1.5px_0px_#0F172A] active:translate-y-0 transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              <i className="ti ti-list-check text-xs" />
+                              <span className="hidden sm:inline">Aturan</span>
+                            </button>
+                          )}
  
                           <button
                             onClick={() => handleDeletePertemuan(pert.id)}
