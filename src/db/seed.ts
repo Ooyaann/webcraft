@@ -104,7 +104,7 @@ async function seed() {
         essential_question:
           "Bagaimana merancang kartu profil pribadi yang informatif dan terstruktur?",
         challenge:
-          "Buatlah kartu profil pribadi sederhana. Pastikan ada wadah utama <body>, judul utama <h1> yang berisi namamu, dan sebuah paragraf <p> berisi perkenalan singkat diri.",
+          "Hai! Mari kita membuat Kartu Profil Pribadimu sendiri agar teman-teman bisa mengenalmu!\n\nIkuti petunjuk seru berikut ya:\n1. Pasang blok utama Lembar Kerja (<body>) sebagai tempat menaruh semua blok lainnya.\n2. Tambahkan Judul Terbesar (<h1>) di dalam Lembar Kerja, lalu ganti isinya dengan namamu.\n3. Tambahkan Paragraf (<p>) di bawah judulmu untuk menceritakan perkenalan singkat tentang dirimu (misalnya hobi atau cita-citamu!).",
         media_url: "",
       },
       guiding_questions_json: [
@@ -133,7 +133,7 @@ async function seed() {
         essential_question:
           "Bagaimana cara mengelompokkan elemen web musik agar rapi?",
         challenge:
-          "Buatlah halaman web galeri musik favorit. Gunakan tag div sebagai pembungkus utama informasi playlist, dengan judul sedang h2 tentang musik kesukaanmu di dalamnya.",
+          "Mari kita buat mading digital bertema Galeri Musik Favoritmu! Kita akan belajar cara merapikan elemen web agar terlihat rapi.\n\nLangkah-langkahnya mudah kok:\n1. Pasang blok utama Lembar Kerja (<body>) terlebih dahulu.\n2. Tambahkan sebuah Kotak Grup (<div>) di dalam Lembar Kerja. Kotak ini berguna sebagai 'dinding mading' untuk mengelompokkan info musik favoritmu.\n3. Masukkan Judul Sedang (<h2>) di dalam Kotak Grup (<div>) tersebut, lalu isi dengan nama band, penyanyi, atau genre musik kesukaanmu!",
         media_url: "",
       },
       guiding_questions_json: [
@@ -162,7 +162,7 @@ async function seed() {
         essential_question:
           "Bagaimana cara menyajikan karya portofoliomu secara online dan menarik?",
         challenge:
-          "Buatlah proyek portofolio impian kreatif. Hiasi halaman dengan CSS style yang mendefinisikan warna latar belakang solid kontras dan buat daftar keterampilanmu menggunakan tag <ul> dan <li>.",
+          "Selamat datang di tantangan akhir! Sekarang saatnya kamu mendesain mading portofolio kreatif yang memamerkan keterampilan hebatmu!\n\nTantangan serumu adalah:\n1. Buat daftar keterampilan atau keahlian yang ingin kamu kuasai menggunakan blok Daftar Bulatan (<ul>) dan isi dengan beberapa Poin Daftar (<li>) (misalnya: bermain game, menggambar, coding, atau bermain musik).\n2. Hiasi halaman madingmu menggunakan blok Hiasan Gaya (<style>) agar terlihat keren! Ubah warna latar belakang (background) halaman sesukamu agar kontras dan menarik.",
         media_url: "",
       },
       guiding_questions_json: [
@@ -190,11 +190,11 @@ async function seed() {
       pertemuan_id: "p1",
       judul: "Pertemuan 1: Kartu Profil Pribadi",
       validator_rules_json: [
-        { type: "exists", selector: "body", error_message: "Misi belum selesai: Kamu belum membuat wadah utama <body>!" },
-        { type: "exists", selector: "h1", error_message: "Misi belum selesai: Kamu belum menambahkan judul utama <h1>!" },
-        { type: "child_of", parent: "body", child: "h1", error_message: "Misi belum selesai: Judul <h1> harus berada di dalam wadah <body>!" },
-        { type: "exists", selector: "p", error_message: "Misi belum selesai: Kamu belum menambahkan paragraf penjelasan <p>!" },
-        { type: "child_of", parent: "body", child: "p", error_message: "Misi belum selesai: Paragraf <p> harus berada di dalam wadah <body>!" },
+        { type: "exists", selector: "body", error_message: "Misi belum selesai: Jangan lupa menambahkan blok Lembar Kerja <body> ya!" },
+        { type: "exists", selector: "h1", error_message: "Misi belum selesai: Yuk, tambahkan Judul Terbesar <h1> untuk namamu!" },
+        { type: "child_of", parent: "body", child: "h1", error_message: "Misi belum selesai: Pastikan Judul <h1> diletakkan di dalam Lembar Kerja <body> ya!" },
+        { type: "exists", selector: "p", error_message: "Misi belum selesai: Kamu belum menambahkan blok Paragraf <p> untuk perkenalan dirimu." },
+        { type: "child_of", parent: "body", child: "p", error_message: "Misi belum selesai: Letakkan Paragraf <p> di dalam Lembar Kerja <body> agar bisa tampil di layar." },
       ],
       max_attempts_before_ai_hint: 4,
     },
@@ -203,11 +203,11 @@ async function seed() {
       pertemuan_id: "p2",
       judul: "Pertemuan 2: Galeri Musik Favorit",
       validator_rules_json: [
-        { type: "exists", selector: "body", error_message: "Misi belum selesai: Kamu belum membuat wadah utama <body>!" },
-        { type: "exists", selector: "div", error_message: "Misi belum selesai: Kamu belum membuat kotak grup <div>!" },
-        { type: "child_of", parent: "body", child: "div", error_message: "Misi belum selesai: Kotak grup <div> harus berada di dalam <body>!" },
-        { type: "exists", selector: "h2", error_message: "Misi belum selesai: Kamu belum menambahkan judul sedang <h2>!" },
-        { type: "child_of", parent: "div", child: "h2", error_message: "Misi belum selesai: Judul sedang <h2> harus berada di dalam kotak grup <div>!" },
+        { type: "exists", selector: "body", error_message: "Misi belum selesai: Jangan lupa menambahkan blok Lembar Kerja <body> ya!" },
+        { type: "exists", selector: "div", error_message: "Misi belum selesai: Jangan lupa menambahkan Kotak Grup <div> untuk merapikan elemen!" },
+        { type: "child_of", parent: "body", child: "div", error_message: "Misi belum selesai: Letakkan Kotak Grup <div> di dalam Lembar Kerja <body>." },
+        { type: "exists", selector: "h2", error_message: "Misi belum selesai: Yuk, pasang Judul Sedang <h2> tentang musik favoritmu!" },
+        { type: "child_of", parent: "div", child: "h2", error_message: "Misi belum selesai: Pastikan Judul Sedang <h2> dimasukkan di dalam Kotak Grup <div> ya!" },
       ],
       max_attempts_before_ai_hint: 4,
     },
@@ -218,7 +218,7 @@ async function seed() {
     pertemuan_id: "p3",
     judul: "Pertemuan 3: Proyek Portofolio Impian",
     studi_kasus:
-      "Buatlah proyek portofolio impian kreatif. Hiasi halaman dengan CSS style yang mendefinisikan warna latar belakang solid kontras dan buat daftar keterampilanmu menggunakan tag <ul> dan <li>.",
+      "Selamat datang di tantangan akhir! Sekarang saatnya kamu mendesain mading portofolio kreatif yang memamerkan keterampilan hebatmu!\n\nTantangan serumu adalah:\n1. Buat daftar keterampilan atau keahlian yang ingin kamu kuasai menggunakan blok Daftar Bulatan (<ul>) dan isi dengan beberapa Poin Daftar (<li>) (misalnya: bermain game, menggambar, coding, atau bermain musik).\n2. Hiasi halaman madingmu menggunakan blok Hiasan Gaya (<style>) agar terlihat keren! Ubah warna latar belakang (background) halaman sesukamu agar kontras dan menarik.",
     // Rubrik 4 pilar Computational Thinking (Tabel 5 proposal), 25% tiap pilar.
     rubrik_json: CT_RUBRIC_CRITERIA,
   });

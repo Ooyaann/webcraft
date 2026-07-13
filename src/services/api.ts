@@ -3,6 +3,7 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
+import { useStore } from '../store/useStore';
 
 // Klien API. Otentikasi lewat cookie httpOnly (di-set server) — token tidak
 // pernah disentuh JS, jadi aman dari pencurian XSS. withCredentials wajib
@@ -39,9 +40,10 @@ const forceLogout = () => {
     localStorage.removeItem('webcraft_token');
     localStorage.removeItem('webcraft_refresh');
   } catch { /* SSR / storage tak tersedia */ }
-  if (window.location.pathname !== '/login') {
-    window.location.href = '/login';
-  }
+  // Reset store state (logout) secara lokal tanpa hard redirect
+  try {
+    useStore.getState().logout();
+  } catch { /* SSR / store tak tersedia */ }
 };
 
 const isAuthEndpoint = (url = '') =>

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
 import { aiService } from '../../services/aiService';
 
-export default function AITutorChat() {
+export default function AITutorChat({ shiftUp = false }) {
   const { ast, activeLevelConfig, attemptHistory, user } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -59,7 +59,7 @@ export default function AITutorChat() {
         targetRules: activeLevelConfig?.validator_rules || [],
         attemptHistory: attemptHistory,
         studentMessage: userMessage,
-        lessonContext: activeLevelConfig?.judul || 'HTML & CSS Dasar',
+        lessonContext: `Judul Misi: ${activeLevelConfig?.judul || 'HTML & CSS Dasar'}\nDeskripsi Misi & Aturan: ${activeLevelConfig?.misi || ''}`,
         conversationHistory: messages.map(m => ({ role: m.sender, content: m.text }))
       });
 
@@ -90,7 +90,7 @@ export default function AITutorChat() {
         targetRules: activeLevelConfig?.validator_rules || [],
         attemptHistory: attemptHistory,
         studentMessage: "Tolong berikan saya petunjuk umum untuk menyelesaikan misi ini.",
-        lessonContext: activeLevelConfig?.judul || 'HTML & CSS Dasar',
+        lessonContext: `Judul Misi: ${activeLevelConfig?.judul || 'HTML & CSS Dasar'}\nDeskripsi Misi & Aturan: ${activeLevelConfig?.misi || ''}`,
         conversationHistory: messages.map(m => ({ role: m.sender, content: m.text }))
       });
 
@@ -122,7 +122,7 @@ export default function AITutorChat() {
         targetRules: activeLevelConfig?.validator_rules || [],
         attemptHistory: attemptHistory,
         studentMessage: questionText,
-        lessonContext: activeLevelConfig?.judul || 'HTML & CSS Dasar',
+        lessonContext: `Judul Misi: ${activeLevelConfig?.judul || 'HTML & CSS Dasar'}\nDeskripsi Misi & Aturan: ${activeLevelConfig?.misi || ''}`,
         conversationHistory: messages.map(m => ({ role: m.sender, content: m.text }))
       });
 
@@ -135,10 +135,10 @@ export default function AITutorChat() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end">
+    <div className={`fixed ${shiftUp ? 'bottom-[224px]' : 'bottom-20'} right-6 z-[45] flex flex-col items-end gap-2 transition-all duration-300`}>
       {/* Chat window */}
       {isOpen && (
-        <div className="w-80 md:w-96 h-[75vh] max-h-[min(500px,calc(100vh-110px))] min-h-[240px] bg-white border-4 border-[#0F172A] rounded-2xl shadow-[6px_6px_0px_#0F172A] flex flex-col mb-4 overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="w-80 md:w-96 h-[75vh] max-h-[min(500px,calc(100vh-110px))] min-h-[240px] bg-white border-4 border-[#0F172A] rounded-2xl shadow-[6px_6px_0px_#0F172A] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Chat Header */}
           <div className="bg-[#4F46E5] text-white border-b-4 border-[#0F172A] px-4 py-3 flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -266,14 +266,14 @@ export default function AITutorChat() {
       {/* Launcher Bubble Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-[#4F46E5] text-white border-4 border-[#0F172A] rounded-full flex items-center justify-center shadow-[4px_4px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-none transition-all duration-150 cursor-pointer relative"
+        className="w-11 h-11 bg-[#4F46E5] text-white border-2 border-[#0F172A] rounded-full flex items-center justify-center shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-none transition-all duration-150 cursor-pointer relative"
         title="Tanya AI Tutor"
       >
-        <i className={`ti ${isOpen ? 'ti-x' : 'ti-bulb'} text-2xl font-bold`} />
+        <i className={`ti ${isOpen ? 'ti-x' : 'ti-bulb'} text-lg font-bold`} />
         {!isOpen && (
-          <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5">
+          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4.5 w-4.5 bg-blue-600 border border-white text-[8px] font-black text-white items-center justify-center">1</span>
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-blue-600 border border-white text-[7px] font-black text-white items-center justify-center">1</span>
           </span>
         )}
       </button>

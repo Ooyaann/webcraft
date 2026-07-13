@@ -44,7 +44,7 @@ export async function getSocraticHint(
   lessonContext: string,
   conversationHistory: { role?: string; content?: string }[] | null = null,
 ): Promise<string> {
-  if (!apiKey()) return getOfflineSocraticHint(currentAst, studentMessage);
+  if (!apiKey()) return getOfflineSocraticHint(currentAst, targetRules, studentMessage);
 
   const systemInstruction =
     "Kamu adalah AI Tutor Socratic dalam Bahasa Indonesia untuk siswa SMP. Misi utama kamu adalah membantu siswa " +
@@ -64,22 +64,72 @@ export async function getSocraticHint(
     return await callGemini(prompt, systemInstruction);
   } catch (err) {
     console.error("Gemini API error in Socratic hint:", err);
-    return getOfflineSocraticHint(currentAst, studentMessage);
+    return getOfflineSocraticHint(currentAst, targetRules, studentMessage);
   }
 }
 
-export function getOfflineSocraticHint(currentAst: Json[], msg: string): string {
+export function getOfflineSocraticHint(
+  currentAst: Json[],
+  targetRules: Json[],
+  msg: string,
+): string {
   const hasBody = currentAst.some((n) => n["type"] === "body");
+  const bodyNode = currentAst.find((n) => n["type"] === "body");
+  const children = (bodyNode?.["children"] as Json[]) || [];
+
   if (msg) {
     const m = msg.toLowerCase();
     if (m.includes("warna") || m.includes("css") || m.includes("style")) {
       return "Untuk menghias halaman web, kamu memerlukan blok `<style>`. Apakah kamu sudah menambahkannya, dan apakah selektor CSS-mu mengarah ke elemen yang tepat?";
     }
+    if (m.includes("bantuan") || m.includes("bingung") || m.includes("caranya")) {
+      if (!hasBody) {
+        return "Mari kita lihat langkah pertama dalam algoritma kodingmu. Setiap halaman web selalu membutuhkan wadah utama `<body>` terlebih dahulu. Apakah kamu sudah menambahkannya?";
+      }
+      return "Periksalah kriteria keberhasilan misi di layar. Apakah ada elemen atau aturan penempatan yang belum kamu ikuti dengan benar?";
+    }
   }
+
+  if (targetRules && targetRules.length > 0) {
+    if (!hasBody) {
+      return "Coba perhatikan kanvas kerjamu. Setiap halaman web selalu membutuhkan wadah utama untuk menampung konten visual. Blok wadah apakah itu?";
+    }
+
+    for (const rule of targetRules) {
+      if (rule["type"] === "exists") {
+        const sel = String(rule["selector"] ?? "");
+        const exists = currentAst.some((n) => n["type"] === sel) || children.some((n) => n["type"] === sel);
+        if (!exists) {
+          return `Untuk menyelesaikan tantangan ini, apakah kamu sudah menambahkan elemen \`<${sel}>\` ke dalam kanvas?`;
+        }
+      } else if (rule["type"] === "child_of") {
+        const p = String(rule["parent"] ?? "");
+        const c = String(rule["child"] ?? "");
+        const hasChild = currentAst.some((n) => n["type"] === c) || children.some((n) => n["type"] === c);
+        if (hasChild) {
+          if (p === "body") {
+            const nested = children.some((n) => n["type"] === c);
+            if (!nested) {
+              return `Elemen \`<${c}>\` sudah kamu tambahkan. Namun, apakah posisinya sudah kamu letakkan di dalam wadah \`<${p}>\`?`;
+            }
+          }
+        }
+      } else if (rule["type"] === "content_match") {
+        const val = String(rule["value"] ?? "").toLowerCase();
+        const htmlCode = JSON.stringify(currentAst).toLowerCase();
+        if (!htmlCode.includes(val)) {
+          return `Tantangan ini mengharuskan adanya teks khusus di dalam karyamu. Apakah kamu sudah mengetikkan kata atau kalimat "${val}"?`;
+        }
+      }
+    }
+    return "Kerangka kode HTML buatanmu tampaknya sudah sesuai kriteria! Kamu bisa mencoba menekan tombol Uji AI untuk memvalidasinya.";
+  }
+
+  // Fallback for empty rules (sandbox/project)
   if (!hasBody) {
-    return "Coba perhatikan kanvas kerjamu. Setiap halaman web selalu membutuhkan wadah utama untuk menampung konten visual. Blok wadah apakah itu?";
+    return "Dokumen HTML buatanmu memerlukan wadah utama `<body>` terlebih dahulu agar konten visual lainnya dapat diletakkan di sana. Coba tambahkan blok `<body>` dulu ya!";
   }
-  return "Struktur kerangkamu sudah tersusun. Sekarang, di manakah kamu meletakkan judul utama <h1> agar berada di dalam wadah utama?";
+  return "Untuk proyek kreatif bebas ini, kamu bisa menyusun kombinasi elemen HTML apa saja (seperti judul, paragraf, gambar, atau list) di dalam `<body>`. Jangan lupa untuk menghiasnya dengan menambahkan blok `<style>` untuk bereksperimen dengan CSS!";
 }
 
 // ---------- 2. CT Journey step evaluator ----------

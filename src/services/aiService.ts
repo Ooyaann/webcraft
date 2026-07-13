@@ -41,12 +41,8 @@ const getMockSocraticHint = (
   studentMessage: string | null | undefined,
   _conversationHistory?: ChatMessage[] | null,
 ): string => {
-  // Simple check on AST nodes
   const hasBody = currentAST.some(n => n.type === 'body');
   const bodyNode = currentAST.find(n => n.type === 'body');
-  const hasH1 = bodyNode?.children?.some(n => n.type === 'h1') || false;
-  const hasP = bodyNode?.children?.some(n => n.type === 'p') || false;
-  const hasStyle = currentAST.some(n => n.type === 'style');
 
   if (studentMessage) {
     const msg = studentMessage.toLowerCase();
@@ -54,29 +50,60 @@ const getMockSocraticHint = (
       return "Halo! Saya adalah Asisten Belajar CT-mu. Bagian mana dari tantangan ini yang ingin kita bedah bersama? Ingat, saya tidak akan memberi tahu jawaban langsung, tapi saya akan membimbingmu menemukannya!";
     }
     if (msg.includes('bantuan') || msg.includes('bingung') || msg.includes('caranya')) {
-      return "Mari kita lihat rencana algoritma yang sudah kamu susun sebelumnya. Langkah pertama adalah membuat wadah utama. Apakah kamu sudah menambahkan elemen `<body>` ke kanvas?";
+      if (!hasBody) {
+        return "Mari kita lihat rencana algoritma yang sudah kamu susun sebelumnya. Langkah pertama adalah membuat wadah utama. Apakah kamu sudah menambahkan elemen `<body>` ke kanvas?";
+      }
+      return "Mari kita lihat kriteria misi kita. Kamu bisa memeriksa elemen mana saja yang diminta di bagian kriteria keberhasilan misi. Adakah elemen yang belum kamu pasang atau letakkan dengan benar?";
     }
     if (msg.includes('warna') || msg.includes('css') || msg.includes('style')) {
-      return "Untuk mengatur tampilan atau warna, kita membutuhkan blok `<style>`. Apakah kamu sudah menambahkannya, dan apakah selektor CSS-nya sudah mengarah ke elemen yang benar (misalnya `body` atau `h1`)?";
+      return "Untuk mengatur tampilan atau warna latar belakang/teks, kita membutuhkan blok `<style>`. Apakah kamu sudah menambahkannya di dalam kanvas, dan menuliskan aturan CSS-mu di sana?";
     }
   }
 
-  // Fallback to structural hints
-  if (!hasBody) {
-    return "Coba perhatikan kanvasmu. Sebuah dokumen web selalu membutuhkan wadah utama untuk menampilkan konten. Blok apa yang berfungsi sebagai wadah utama tersebut?";
-  }
-  if (!hasH1) {
-    return "Wadah `<body>` sudah ada, bagus! Sekarang, bagaimana cara memberikan judul utama pada halaman web ini? Blok teks manakah yang memiliki tingkat kepentingan tertinggi?";
-  }
-  if (!hasP) {
-    return "Judul utama sudah terpasang. Sekarang, bagaimana cara menambahkan paragraf penjelasan di bawah judul tersebut? Ingat untuk menaruhnya di dalam `<body>` agar terlihat di layar.";
-  }
-  if (targetRules && targetRules.some(r => r.type === 'content_match') && !hasStyle) {
-    const contentRule = targetRules.find(r => r.type === 'content_match');
-    return `Judul halaman sudah ada. Apakah isinya sudah tepat dan sesuai petunjuk? Periksa tulisan "${contentRule?.value || ''}".`;
+  // If there are target rules, we check which rules are missing and guide the student accordingly
+  if (targetRules && targetRules.length > 0) {
+    // 1. Check Body rule
+    if (!hasBody) {
+      return "Coba perhatikan kanvasmu. Sebuah dokumen web selalu membutuhkan wadah utama untuk menampilkan konten visual. Blok wadah apakah itu?";
+    }
+
+    // 2. Iterate rules and find the first one that is currently not satisfied
+    for (const rule of targetRules) {
+      if (rule.type === 'exists') {
+        const sel = rule.selector || '';
+        const exists = currentAST.some(n => n.type === sel) || (bodyNode?.children?.some(n => n.type === sel)) || false;
+        if (!exists) {
+          return `Untuk menyelesaikan misi ini, apakah kamu sudah menambahkan blok/elemen \`<${sel}>\` ke dalam lembar kerja kodingmu?`;
+        }
+      } else if (rule.type === 'child_of') {
+        const p = rule.parent || '';
+        const c = rule.child || '';
+        const hasChild = currentAST.some(n => n.type === c) || (bodyNode?.children?.some(n => n.type === c)) || false;
+        if (hasChild) {
+          // If child exists but it's not nested inside parent
+          if (p === 'body') {
+            const nested = bodyNode?.children?.some(n => n.type === c) || false;
+            if (!nested) {
+              return `Elemen \`<${c}>\` sudah kamu buat. Namun, apakah letaknya sudah dimasukkan ke dalam wadah \`<${p}>\`?`;
+            }
+          }
+        }
+      } else if (rule.type === 'content_match') {
+        const val = rule.value || '';
+        const htmlCode = JSON.stringify(currentAST).toLowerCase();
+        if (!htmlCode.includes(val.toLowerCase())) {
+          return `Misi ini membutuhkan teks khusus di dalam kontenmu. Apakah kamu sudah mengetikkan kata atau kalimat "${val}" pada elemen yang tepat?`;
+        }
+      }
+    }
+    return "Struktur kodenya sepertinya sudah hampir lengkap! Coba uji kembali menggunakan tombol Uji AI untuk memastikannya.";
   }
 
-  return "Struktur HTML-mu sudah cukup rapi! Coba periksa apakah kamu perlu mempercantiknya dengan menambahkan blok `<style>` di paling bawah untuk mengatur warna latar belakang atau teks.";
+  // If there are no rules (project tasks or sandbox)
+  if (!hasBody) {
+    return "Dokumen HTML buatanmu memerlukan wadah utama `<body>` terlebih dahulu agar konten visual lainnya dapat diletakkan di sana. Coba tambahkan blok `<body>` dulu ya!";
+  }
+  return "Untuk proyek kreatif bebas ini, kamu bisa menyusun kombinasi elemen HTML apa saja (seperti judul, paragraf, gambar, atau list) di dalam `<body>`. Jangan lupa untuk menghiasnya dengan menambahkan blok `<style>` untuk bereksperimen dengan CSS!";
 };
 
 export const aiService = {

@@ -19,15 +19,15 @@ import { toast } from '../components/common/toast';
 const DEFAULT_LEVEL_CONFIG = {
   id: 'easy-1',
   pertemuan_id: 'p1',
-  judul: 'Halaman Profil Sederhana',
-  misi: 'Buatlah halaman web profil sederhana! Pastikan ada wadah utama <body>, judul utama <h1> berisi namamu, dan sebuah paragraf <p> berisi perkenalan singkat.',
+  judul: 'Pertemuan 1: Kartu Profil Pribadi',
+  misi: 'Hai! Mari kita membuat Kartu Profil Pribadimu sendiri agar teman-teman bisa mengenalmu!\n\nIkuti petunjuk seru berikut ya:\n1. Pasang blok utama Lembar Kerja (<body>) sebagai tempat menaruh semua blok lainnya.\n2. Tambahkan Judul Terbesar (<h1>) di dalam Lembar Kerja, lalu ganti isinya dengan namamu.\n3. Tambahkan Paragraf (<p>) di bawah judulmu untuk menceritakan perkenalan singkat tentang dirimu (misalnya hobi atau cita-citamu!).',
   validator_rules: [
-    { type: 'exists', selector: 'body', error_message: 'Misi belum selesai: Kamu belum membuat wadah utama <body>!' },
-    { type: 'exists', selector: 'h1', error_message: 'Misi belum selesai: Kamu belum menambahkan judul utama <h1>!' },
-    { type: 'child_of', parent: 'body', child: 'h1', error_message: 'Misi belum selesai: Judul <h1> harus berada di dalam wadah <body>!' },
-    { type: 'exists', selector: 'p', error_message: 'Misi belum selesai: Kamu belum menambahkan paragraf <p>!' },
-    { type: 'child_of', parent: 'body', child: 'p', error_message: 'Misi belum selesai: Paragraf <p> harus berada di dalam wadah <body>!' },
-    { type: 'count', selector: 'body > *', min: 2, error_message: 'Misi belum selesai: Harus ada minimal 2 elemen konten di dalam <body>!' }
+    { type: 'exists', selector: 'body', error_message: 'Misi belum selesai: Jangan lupa menambahkan blok Lembar Kerja <body> ya!' },
+    { type: 'exists', selector: 'h1', error_message: 'Misi belum selesai: Yuk, tambahkan Judul Terbesar <h1> untuk namamu!' },
+    { type: 'child_of', parent: 'body', child: 'h1', error_message: 'Misi belum selesai: Pastikan Judul <h1> diletakkan di dalam Lembar Kerja <body> ya!' },
+    { type: 'exists', selector: 'p', error_message: 'Misi belum selesai: Kamu belum menambahkan blok Paragraf <p> untuk perkenalan dirimu.' },
+    { type: 'child_of', parent: 'body', child: 'p', error_message: 'Misi belum selesai: Letakkan Paragraf <p> di dalam Lembar Kerja <body> agar bisa tampil di layar.' },
+    { type: 'count', selector: 'body > *', min: 2, error_message: 'Misi belum selesai: Harus ada minimal 2 elemen konten di dalam Lembar Kerja <body>!' }
   ]
 };
 
@@ -100,17 +100,17 @@ export default function Workspace({ isSandbox = false }) {
 
   // Open mission popup on mount or when onboarding closes
   useEffect(() => {
-    if (isCompact && activeLevelConfig?.misi) {
+    if (activeLevelConfig?.misi) {
       const hideOnboarding = localStorage.getItem('webcraft_hide_onboarding') === 'true';
       if (hideOnboarding) {
         setShowMissionPopup(true);
       }
     }
-  }, [isCompact, activeLevelConfig]);
+  }, [activeLevelConfig]);
 
   const handleOnboardingClose = () => {
     setIsOnboardingOpen(false);
-    if (isCompact && activeLevelConfig?.misi) {
+    if (activeLevelConfig?.misi) {
       setShowMissionPopup(true);
     }
   };
@@ -478,6 +478,18 @@ export default function Workspace({ isSandbox = false }) {
               <span className="hidden sm:inline">Panduan</span>
             </button>
 
+            {activeLevelConfig?.misi && (
+              <button
+                type="button"
+                onClick={() => setShowMissionPopup(true)}
+                title={isSandbox ? "Lihat Sambutan Sandbox" : "Lihat Misi Pembelajaran"}
+                className="border-2 border-blue-400 bg-blue-950 hover:bg-blue-900 text-blue-200 hover:text-white font-fredoka font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:translate-y-[0.5px] px-3 py-1.5 text-xs"
+              >
+                <i className={`ti ${isSandbox ? 'ti-flask' : 'ti-target'} text-sm`} />
+                <span className="hidden sm:inline">Misi</span>
+              </button>
+            )}
+
 
 
             <button
@@ -520,30 +532,7 @@ export default function Workspace({ isSandbox = false }) {
       {/* Main Workspace Split Layout (3 Panels) */}
       <div className="flex-1 w-full flex flex-col overflow-hidden">
         
-        {/* Mission Instructions Panel (only if not compact mode) */}
-        {!isCompact && activeLevelConfig?.misi && (
-          <div className={`border-b-4 border-[#0F172A] flex items-center gap-2 shrink-0 px-4 py-3 ${
-            isSandbox 
-              ? 'bg-gradient-to-r from-amber-50 via-amber-50/50 to-yellow-50/30' 
-              : 'bg-gradient-to-r from-indigo-50 via-indigo-50/50 to-blue-50/30'
-          }`}>
-            <div className={`border-2 rounded-lg flex items-center justify-center shrink-0 ${isCompact ? 'w-5 h-5' : 'w-8 h-8'} ${
-              isSandbox
-                ? 'bg-amber-100 border-amber-500 shadow-[1px_1px_0px_rgba(245,158,11,0.3)]'
-                : 'bg-indigo-100 border-indigo-500 shadow-[1px_1px_0px_rgba(99,102,241,0.3)]'
-            }`}>
-              <i className={`ti ${isSandbox ? 'ti-flask' : 'ti-target'} ${isSandbox ? 'text-amber-600' : 'text-indigo-600'} ${isCompact ? 'text-xs' : 'text-base'} animate-pulse`} />
-            </div>
-            <div className="text-left min-w-0">
-              {!isCompact && <span className={`font-fredoka text-[9px] font-black uppercase tracking-widest block leading-none ${
-                isSandbox ? 'text-amber-600' : 'text-indigo-600'
-              }`}>
-                {isSandbox ? 'Ruang Eksperimen Bebas (Sandbox)' : 'Misi yang harus dikerjakan'}
-              </span>}
-              <p className={`font-nunito text-slate-800 font-bold leading-snug ${isCompact ? 'text-[10px] line-clamp-1' : 'text-xs leading-relaxed mt-0.5'}`}>{activeLevelConfig.misi}</p>
-            </div>
-          </div>
-        )}
+        {/* Mission Instructions Panel removed in favor of Misi Header Button */}
 
         <div className="flex-1 w-full flex items-stretch overflow-hidden">
           {/* Left Panel (Palette) */}
@@ -851,12 +840,21 @@ export default function Workspace({ isSandbox = false }) {
 
       {/* Validation Result Detail List */}
       {showValidationResult && validationErrors.length > 0 && (
-        <div className={`bg-red-50 border-t-4 border-[#0F172A] text-left shrink-0 overflow-y-auto ${isCompact ? 'p-2 max-h-[60px]' : 'p-4 max-h-[140px]'}`}>
-          <h4 className="font-nunito text-xs font-bold text-red-750 flex items-center gap-1 mb-2">
+        <div className={`bg-red-50 border-t-4 border-[#0F172A] text-left shrink-0 overflow-y-auto relative ${isCompact ? 'p-2 max-h-[60px]' : 'p-4 max-h-[140px]'}`}>
+          {/* Close Button */}
+          <button
+            onClick={() => setShowValidationResult(false)}
+            className="absolute top-2 right-2 md:top-3 md:right-3 w-5 h-5 flex items-center justify-center rounded bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 transition-colors cursor-pointer"
+            title="Tutup Rincian"
+          >
+            <i className="ti ti-x text-[10px] font-bold" />
+          </button>
+
+          <h4 className="font-nunito text-xs font-bold text-red-750 flex items-center gap-1 mb-2 pr-6">
             <i className="ti ti-alert-triangle text-red-600 text-sm font-bold" />
             Rincian Kesalahan Struktur Kode:
           </h4>
-          <ul className="font-nunito text-[11px] text-red-700 font-bold space-y-1 list-disc pl-4">
+          <ul className="font-nunito text-[11px] text-red-700 font-bold space-y-1 list-disc pl-4 pr-6">
             {validationErrors.map((err, idx) => (
               <li key={idx}>{err.message || err}</li>
             ))}
@@ -865,7 +863,7 @@ export default function Workspace({ isSandbox = false }) {
       )}
 
       {/* Socratic AI Tutor Bubble */}
-      {!isSandbox && <AITutorChat />}
+      {!isSandbox && <AITutorChat shiftUp={showValidationResult && validationErrors.length > 0} />}
 
       {/* Reflection Post-coding Modal */}
       {showReflectionModal && typeof window !== 'undefined' && createPortal(
@@ -972,71 +970,139 @@ export default function Workspace({ isSandbox = false }) {
         document.body
       )}
 
-      {/* Mission Information Popup Modal for Mobile Landscape */}
-      {showMissionPopup && typeof window !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="relative bg-white w-full max-w-md border-4 border-[#0F172A] rounded-2xl shadow-[6px_6px_0px_#0F172A] overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-4 border-b-4 border-[#0F172A] flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <i className={`ti ${isSandbox ? 'ti-flask text-yellow-350 animate-bounce' : 'ti-target text-yellow-350 animate-pulse'} text-xl`} />
-                <h3 className="font-fredoka text-sm font-black tracking-wide leading-none text-white">
-                  {isSandbox ? 'Sambutan Sandbox' : 'Misi Pembelajaran'}
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowMissionPopup(false)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <i className="ti ti-x text-sm" />
-              </button>
-            </div>
+      {/* Mission Information Popup Modal */}
+      {showMissionPopup && typeof window !== 'undefined' && (() => {
+        const getFriendlyCriteria = (rule) => {
+          const type = rule.type;
+          const sel = rule.selector || '';
+          const parent = rule.parent || '';
+          const child = rule.child || '';
+          
+          if (type === 'exists') {
+            if (sel === 'body') return 'Menyiapkan halaman utama web kamu dengan memasang Lembar Kerja (<body>)';
+            if (sel === 'h1') return 'Membuat judul utama yang besar (<h1>) untuk menuliskan namamu';
+            if (sel === 'p') return 'Menuliskan perkenalan singkat tentang dirimu menggunakan blok Paragraf (<p>)';
+            if (sel === 'div') return 'Memasang Kotak Grup (<div>) sebagai wadah penata musik kesukaanmu';
+            if (sel === 'h2') return 'Membuat judul berukuran sedang (<h2>) untuk menuliskan nama musik favoritmu';
+            if (sel === 'style') return 'Memasang blok Hiasan Gaya (<style>) untuk mewarnai dan mempercantik halaman webmu';
+            if (sel === 'ul') return 'Membuat Daftar Bulatan (<ul>) agar poin-poin keterampilanmu tersusun rapi';
+            if (sel === 'li') return 'Menambahkan Poin Daftar (<li>) untuk menuliskan nama keterampilanmu satu-per-satu';
+            return `Menambahkan blok <${sel}> ke dalam halaman web`;
+          }
+          if (type === 'child_of') {
+            const getReadableName = (tag) => {
+              if (tag === 'body') return 'Lembar Kerja (<body>)';
+              if (tag === 'div') return 'Kotak Grup (<div>)';
+              if (tag === 'h1') return 'Judul Utama (<h1>)';
+              if (tag === 'h2') return 'Judul Sedang (<h2>)';
+              if (tag === 'p') return 'Paragraf (<p>)';
+              if (tag === 'ul') return 'Daftar Bulatan (<ul>)';
+              if (tag === 'li') return 'Poin Daftar (<li>)';
+              return `<${tag}>`;
+            };
+            return `Memasukkan blok ${getReadableName(child)} ke dalam ${getReadableName(parent)}`;
+          }
+          if (type === 'count') {
+            return `Menambahkan minimal ${rule.min || 2} blok konten seru di dalam Lembar Kerja (<body>)`;
+          }
+          return rule.error_message || 'Kriteria wajib dipenuhi';
+        };
 
-            <div className="p-5 overflow-y-auto text-left flex flex-col gap-4">
-              <div>
-                <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-600 block mb-1">
-                  {isSandbox ? 'Informasi Sandbox' : 'Misi Modul'}
-                </span>
-                <h4 className="font-fredoka text-sm font-bold text-slate-800">
-                  {isSandbox ? 'Ruang Eksperimen Bebas' : activeLevelConfig?.judul}
-                </h4>
+        const cleanRules = activeLevelConfig?.validator_rules?.map(getFriendlyCriteria) || [];
+
+        return createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="relative bg-white w-full max-w-lg border-4 border-[#0F172A] rounded-2xl shadow-[8px_8px_0px_#0F172A] overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-950 text-white px-6 py-4 border-b-4 border-[#0F172A] flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <i className={`ti ${isSandbox ? 'ti-flask text-yellow-350 animate-bounce' : 'ti-target text-yellow-350 animate-pulse'} text-xl`} />
+                  <h3 className="font-fredoka text-sm font-black tracking-wide leading-none text-white">
+                    {isSandbox ? 'Sambutan Eksperimen Sandbox' : 'Detail Misi Pembelajaran'}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowMissionPopup(false)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <i className="ti ti-x text-sm" />
+                </button>
               </div>
 
-              <div className="border-2 border-[#0F172A] rounded-xl p-3.5 bg-indigo-50/40 shadow-[2px_2px_0px_rgba(0,0,0,0.05)]">
-                <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-500 block mb-1">
-                  {isSandbox ? 'Tentang Sandbox' : 'Tantangan Praktik'}
-                </span>
-                <p className="font-nunito text-xs text-slate-700 font-extrabold leading-relaxed whitespace-pre-line">
-                  {activeLevelConfig?.misi}
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-1.5 pt-1">
-                <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-slate-500 block">Petunjuk Pengerjaan</span>
-                <div className="flex items-start gap-1.5 text-xs font-nunito font-bold text-slate-600">
-                  <i className="ti ti-info-circle text-blue-500 mt-0.5" />
-                  <span>
-                    {isSandbox ? (
-                      <>Di sini Anda bebas menyusun blok HTML apa saja. Hasil koding langsung tampil di Live Preview! Tekan tombol lab (<i className="ti ti-flask inline text-blue-600" />) untuk membaca sambutan ini kembali.</>
-                    ) : (
-                      <>Rakit blok HTML di kanvas koding lalu uji dan kirim hasilnya! Anda bisa menekan tombol target (<i className="ti ti-target inline text-blue-600" />) untuk melihat misi ini lagi.</>
-                    )}
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto text-left flex flex-col gap-5">
+                <div>
+                  <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-600 block mb-1">
+                    {isSandbox ? 'Ruang Bebas' : 'Misi Aktif'}
                   </span>
+                  <h4 className="font-fredoka text-base font-bold text-slate-800 leading-snug">
+                    {isSandbox ? 'Mode Sandbox (Eksperimen Bebas)' : activeLevelConfig?.judul}
+                  </h4>
+                </div>
+
+                {/* Mission / Challenge Description */}
+                <div className="flex flex-col gap-2">
+                  <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-indigo-500 block">Tantangan Misi</span>
+                  <div className="border-2 border-[#0F172A] rounded-xl p-4 bg-indigo-50/40 shadow-[2px_2px_0px_rgba(0,0,0,0.05)]">
+                    <p className="font-nunito text-xs text-slate-700 font-extrabold leading-relaxed whitespace-pre-line">
+                      {activeLevelConfig?.misi}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Success Criteria (Only if Rules Exist) */}
+                {!isSandbox && cleanRules.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-[#EC4899] block">Kriteria Keberhasilan</span>
+                    <div className="border-2 border-[#0F172A] rounded-xl p-3.5 bg-pink-50/30 flex flex-col gap-2.5 shadow-[2px_2px_0px_rgba(0,0,0,0.05)]">
+                      {cleanRules.map((cleanMsg, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs font-nunito font-bold text-slate-750">
+                          <i className="ti ti-checkbox text-[#EC4899] mt-0.5 text-base shrink-0" />
+                          <span className="leading-snug">{cleanMsg}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Workspace Workflow */}
+                <div className="flex flex-col gap-2">
+                  <span className="font-fredoka text-[9px] font-black uppercase tracking-widest text-[#10B981] block">Alur Pengerjaan Workspace</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                    {[
+                      { step: '1', title: 'Rakit Blok', desc: 'Seret & susun blok HTML dari palet kiri ke kanvas koding.', icon: 'ti-layout-grid-add', color: 'bg-blue-500' },
+                      { step: '2', title: 'Isi Konten', desc: 'Klik dan ganti isi teks/sumber gambar sesuai instruksi.', icon: 'ti-edit', color: 'bg-amber-500' },
+                      { step: '3', title: 'Uji AI', desc: 'Klik tombol Uji AI untuk memeriksa struktur dan logika kode.', icon: 'ti-sparkles', color: 'bg-purple-500' },
+                      { step: '4', title: 'Kirim Karya', desc: 'Kirim hasil karyamu, jawab refleksi, dan dapatkan skor CT!', icon: 'ti-send', color: 'bg-emerald-500' }
+                    ].map(flow => (
+                      <div key={flow.step} className="border-2 border-[#0F172A] rounded-xl p-3 bg-slate-50 flex gap-2.5 shadow-[2px_2px_0px_rgba(0,0,0,0.05)] items-start">
+                        <div className={`w-7 h-7 rounded-lg ${flow.color} text-white flex items-center justify-center shrink-0 border-2 border-[#0F172A] shadow-[1px_1px_0px_#0F172A]`}>
+                          <i className={`ti ${flow.icon} text-sm`} />
+                        </div>
+                        <div className="leading-tight">
+                          <h5 className="font-fredoka text-xs font-bold text-slate-800">{flow.step}. {flow.title}</h5>
+                          <p className="font-nunito text-[10px] text-slate-500 font-bold mt-1 leading-normal">{flow.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-slate-50 border-t-4 border-[#0F172A] p-4 flex justify-end shrink-0">
-              <button
-                onClick={() => setShowMissionPopup(false)}
-                className="px-5 py-2 bg-blue-600 text-white border-2 border-[#0F172A] rounded-xl font-fredoka text-xs font-bold shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] hover:shadow-[3px_3px_0px_#0F172A] active:shadow-[1px_1px_0px_#0F172A] cursor-pointer transition-all"
-              >
-                {isSandbox ? 'Mulai Eksperimen!' : 'Mulai Misi!'}
-              </button>
+              {/* Modal Footer */}
+              <div className="bg-slate-50 border-t-4 border-[#0F172A] p-4 flex justify-end shrink-0">
+                <button
+                  onClick={() => setShowMissionPopup(false)}
+                  className="px-6 py-2.5 bg-blue-600 text-white border-2 border-[#0F172A] rounded-xl font-fredoka text-xs font-bold shadow-[2px_2px_0px_#0F172A] hover:-translate-y-0.5 active:translate-y-[1px] hover:shadow-[3px_3px_0px_#0F172A] active:shadow-[1px_1px_0px_#0F172A] cursor-pointer transition-all"
+                >
+                  {isSandbox ? 'Mulai Eksperimen!' : 'Mulai Misi!'}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        );
+      })()}
 
       {/* Workspace Onboarding Guide Tutorial Modal */}
       <WorkspaceOnboarding
